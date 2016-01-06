@@ -71,11 +71,6 @@ public slots:
     void selectAll(int state);
     void rotateChecked();
 
-//private slots:
-//    void loadThumbnailAsync(const QFileInfo & file_path);
-
-
-
 private slots:
     void UpdateThumbnail(const QFileInfo & fileInfo);
     void retrieveFiles(const QString & path = QString());
@@ -83,13 +78,9 @@ private slots:
 private:
     QModelIndex findByFilePath(const QFileInfo & file_path);
 
-
     // QList elements should be copyable QObject and subclasses arn't
     QList<MyData *> m_files;
     QFileSystemWatcher m_watcher;
-//    QList<QFileInfo> filesInfo_;
-//    QList<QPixmap> thumbnails_;
-//    QList<int> checkState_;
 };
 
 #endif
