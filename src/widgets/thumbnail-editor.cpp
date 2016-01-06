@@ -1,0 +1,1 @@
+#include "thumbnail-editor.hh"

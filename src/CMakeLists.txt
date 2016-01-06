@@ -20,6 +20,7 @@ set(SRCS
   my-model.cpp
   my-view.cpp
   tools/dispatch.cpp
+  widgets/thumbnail-editor.cpp
 )
 
 set(HDRS
@@ -29,6 +30,7 @@ set(HDRS
   my-model.hh
   my-view.hh
   tools/dispatch.hh
+  widgets/thumbnail-editor.hh
 ) 
 
 #set(UIS
