@@ -14,6 +14,7 @@
 
 #include "clickable.hh"
 #include "my-model.hh"
+#include "widgets/thumbnail-editor.hh"
 
 MyDelegate::MyDelegate(QObject * parent)
     : QStyledItemDelegate(parent)
@@ -120,11 +121,15 @@ QWidget * MyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem 
 {
     Q_UNUSED(option);
 
-    QPixmap pixmap(":images/completed.png");
-    Clickable * rotate = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation), parent);
-    connect(rotate, &Clickable::clicked, this, &MyDelegate::setRotateLeft);
-    rotate->Saved(true);
-    return rotate;
+    ThumbnailEditor * te = new ThumbnailEditor(parent);
+    connect(te, &ThumbnailEditor::action, this, &MyDelegate::setRotateLeft);
+    return te;
+
+//    QPixmap pixmap(":images/completed.png");
+//    Clickable * rotate = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation), parent);
+//    connect(rotate, &Clickable::clicked, this, &MyDelegate::setRotateLeft);
+//    rotate->Saved(true);
+//    return rotate;
 }
 
 void MyDelegate::setEditorData(QWidget * editor, const QModelIndex & index) const
@@ -140,12 +145,13 @@ void MyDelegate::setModelData(QWidget * editor, QAbstractItemModel * model, cons
         return;
     }
 
-    Clickable * cl =  dynamic_cast<Clickable *>(editor);
-    if(!cl->isSaved())
-    {
-        m->rotateLeft(index);
-        cl->Saved(true);
-    }
+    m->rotateLeft(index);
+//    Clickable * cl =  dynamic_cast<Clickable *>(editor);
+//    if(!cl->isSaved())
+//    {
+//        m->rotateLeft(index);
+//        cl->Saved(true);
+//    }
 
 }
 
@@ -161,18 +167,18 @@ void MyDelegate::setRotateLeft()
 
 bool MyDelegate::eventFilter(QObject * editor, QEvent * event)
 {
-    Clickable * cl =  dynamic_cast<Clickable *>(editor);
-    if(cl != nullptr && (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick))
-    {
-        QMouseEvent * me = dynamic_cast<QMouseEvent *>(event);
-        if(me != nullptr)
-        {
-            if( me->button() == Qt::LeftButton)
-            {
-                cl->Saved(false);
-            }
-        }
-    }
+//    Clickable * cl =  dynamic_cast<Clickable *>(editor);
+//    if(cl != nullptr && (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick))
+//    {
+//        QMouseEvent * me = dynamic_cast<QMouseEvent *>(event);
+//        if(me != nullptr)
+//        {
+//            if( me->button() == Qt::LeftButton)
+//            {
+//                cl->Saved(false);
+//            }
+//        }
+//    }
     return QStyledItemDelegate::eventFilter(editor, event);
 }
 

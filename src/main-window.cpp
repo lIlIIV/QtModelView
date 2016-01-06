@@ -11,7 +11,7 @@
 
 #include "clickable.hh"
 #include "my-view.hh"
-
+#include "widgets/thumbnail-editor.hh"
 
 MainWindow::MainWindow()
     : list_view(new QListView(this)),
@@ -72,18 +72,24 @@ MainWindow::MainWindow()
     QCheckBox * selectAll = new QCheckBox("Select all");
     connect(selectAll, &QCheckBox::stateChanged, my_model, &MyModel::selectAll);
 
-    QPixmap pixmap(":images/completed.png");
-    Clickable * rotateAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    connect(rotateAll, &Clickable::clicked, my_model, &MyModel::rotateChecked);
+//    QPixmap pixmap(":images/completed.png");
+//    Clickable * rotateAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+//    connect(rotateAll, &Clickable::clicked, my_model, &MyModel::rotateChecked);
 
-    pixmap.load(":images/unstarted.png");
-    Clickable * deleteAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    connect(deleteAll, &Clickable::clicked, my_model, &MyModel::removeSelected);
+//    pixmap.load(":images/unstarted.png");
+//    Clickable * deleteAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+//    connect(deleteAll, &Clickable::clicked, my_model, &MyModel::removeSelected);
 
     QHBoxLayout * topLeft = new QHBoxLayout();
+
     topLeft->addWidget(selectAll);
-    topLeft->addWidget(rotateAll);
-    topLeft->addWidget(deleteAll);
+//    topLeft->addWidget(rotateAll);
+//    topLeft->addWidget(deleteAll);
+
+    ThumbnailEditor * te = new ThumbnailEditor();
+    topLeft->addWidget(te);
+    connect(te, &ThumbnailEditor::action, my_model, &MyModel::action);
+
     topLeft->addSpacing(5);
     topLeft->addStretch();
 

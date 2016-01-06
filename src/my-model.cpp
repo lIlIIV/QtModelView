@@ -551,3 +551,22 @@ void MyModel::UpdateThumbnail(const QFileInfo & fileInfo)
         //
     }
 }
+
+
+void MyModel::action(ThumbnailEditor::Action action)
+{
+    switch(action)
+    {
+    case ThumbnailEditor::Action::RotateLeft:
+        rotateChecked();
+        break;
+    case ThumbnailEditor::Action::RotateRight:
+        break;
+    case ThumbnailEditor::Action::Delete:
+        removeSelected();
+        break;
+    default:
+        break;
+
+    }
+}

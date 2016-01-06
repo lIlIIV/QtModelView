@@ -10,6 +10,8 @@
 #include <QPixmap>
 #include <QVariant>
 
+#include "widgets/thumbnail-editor.hh"
+
 
 class MyData: public QObject
 {
@@ -70,6 +72,7 @@ public:
 public slots:
     void selectAll(int state);
     void rotateChecked();
+    void action(ThumbnailEditor::Action action);
 
 private slots:
     void UpdateThumbnail(const QFileInfo & fileInfo);
