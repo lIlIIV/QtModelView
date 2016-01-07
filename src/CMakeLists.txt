@@ -18,6 +18,7 @@ set(SRCS
   main-window.cpp
   my-delegate.cpp
   my-model.cpp
+  my-style.cpp
   my-view.cpp
   tools/dispatch.cpp
   widgets/thumbnail-editor.cpp
@@ -28,6 +29,7 @@ set(HDRS
   main-window.hh
   my-delegate.hh
   my-model.hh
+  my-style.hh
   my-view.hh
   tools/dispatch.hh
   widgets/thumbnail-editor.hh

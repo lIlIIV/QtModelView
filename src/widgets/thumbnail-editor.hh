@@ -20,6 +20,7 @@ public:
         RotateRight,
         Delete
     };
+    QSize sizeHint() const;
 
 signals:
     void action(Action);

@@ -3,5 +3,6 @@
         <file>images/completed.png</file>
         <file>images/uncompleted.png</file>
         <file>images/unstarted.png</file>
+        <file>style/style.qss</file>
     </qresource>
 </RCC>

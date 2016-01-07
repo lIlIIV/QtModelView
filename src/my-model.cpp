@@ -172,9 +172,9 @@ QVariant MyModel::data(const QModelIndex & index, int role) const
     case Qt::ToolTipRole:
         return m_files[row]->m_fileInfo.absoluteFilePath();
 		break;
-    case Qt::SizeHintRole:
-        return QSize(190, 190);
-        break;
+//    case Qt::SizeHintRole:
+//        return QSize(190, 190);
+//        break;
     case Qt::StatusTipRole:
         return "Status Tip"; // ??
     default:
@@ -468,22 +468,20 @@ bool MyModel::addRow(MyData * data)
 
  bool MyModel::removeSelected()
  {
-     bool out = true;
-     bool allUnchecked = false;
-
-     while(!allUnchecked)
-     {
-         allUnchecked = true;
-         for(int i = 0; i < rowCount(); i++)
-         {
-             if(m_files[i]->m_checkState == Qt::Checked)
-             {
-                 out |= removeRows(i, 1);
-                 allUnchecked = false;
-             }
-         }
-     }
-     return out;
+    int rows = rowCount();
+    for(int i = 0; i < rows; i++)
+    {
+        if(m_files[i]->m_checkState == Qt::Checked)
+        {
+            if(!removeRow(i))
+            {
+                return false;
+            }
+            rows--;
+            i--;
+        }
+    }
+    return true;
  }
 
  void MyModel::retrieveFiles(const QString &path)
@@ -518,21 +516,19 @@ bool MyModel::addRow(MyData * data)
         }
      }
 
-     // TODO REMOVE
-    bool allRemoved = false;
-
-     while(!allRemoved)
-     {
-         allRemoved = true;
-         for(int i = 0; i < rowCount(); i++)
+    int rows = rowCount();
+    for(int i = 0; i < rows; i++)
+    {
+         QString file_path = data(index(i,0), Qt::ToolTipRole).toString();
+         if(!files.contains(file_path))
          {
-             QString file_path = data(index(i,0), Qt::ToolTipRole).toString();
-             if(!files.contains(file_path))
+             if(!removeRow(i))
              {
-                 removeRow(i);
-                 allRemoved = false;
+                 // TODO Log errror here
+                 break;
              }
-
+             rows--;
+             i--;
          }
      }
 }

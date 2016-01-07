@@ -19,6 +19,17 @@ int main(int args, char * argv[])
 	
     MainWindow mainW;
     mainW.show();
+
+    QFile styleFile(":style/style.qss");
+    if (!styleFile.open(QIODevice::ReadOnly))
+    {
+        printf("Unable to load styles file\n");
+        return -1;
+    }
+
+    QString StyleSheet(styleFile.readAll());
+    app.setStyleSheet(StyleSheet);
+    styleFile.close();
  
 	return app.exec();
 }

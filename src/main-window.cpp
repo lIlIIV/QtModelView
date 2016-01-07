@@ -11,6 +11,7 @@
 
 #include "clickable.hh"
 #include "my-view.hh"
+#include "my-style.hh"
 #include "widgets/thumbnail-editor.hh"
 
 MainWindow::MainWindow()
@@ -32,8 +33,9 @@ MainWindow::MainWindow()
     list_view->setMovement(QListView::Snap);
 
     // Set size
-    list_view->setMaximumWidth(500);
-    list_view->setMinimumWidth(500);
+    list_view->setMaximumWidth(210);
+    list_view->setMinimumWidth(210);
+    list_view->setSpacing(50);
 
     // Remove horisontal scroll
 
@@ -47,6 +49,8 @@ MainWindow::MainWindow()
 
     // Show Drop indicator
     list_view->setDropIndicatorShown(true);
+
+    list_view->setStyle(new MyStyle(list_view->style()));
 
     // ..
 
@@ -76,19 +80,19 @@ MainWindow::MainWindow()
 //    Clickable * rotateAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 //    connect(rotateAll, &Clickable::clicked, my_model, &MyModel::rotateChecked);
 
-//    pixmap.load(":images/unstarted.png");
-//    Clickable * deleteAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-//    connect(deleteAll, &Clickable::clicked, my_model, &MyModel::removeSelected);
+    QPixmap pixmap(":images/unstarted.png");
+    Clickable * deleteAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    connect(deleteAll, &Clickable::clicked, my_model, &MyModel::removeSelected);
 
     QHBoxLayout * topLeft = new QHBoxLayout();
 
     topLeft->addWidget(selectAll);
 //    topLeft->addWidget(rotateAll);
-//    topLeft->addWidget(deleteAll);
+    topLeft->addWidget(deleteAll);
 
-    ThumbnailEditor * te = new ThumbnailEditor();
-    topLeft->addWidget(te);
-    connect(te, &ThumbnailEditor::action, my_model, &MyModel::action);
+//    ThumbnailEditor * te = new ThumbnailEditor();
+//    topLeft->addWidget(te);
+//    connect(te, &ThumbnailEditor::action, my_model, &MyModel::action);
 
     topLeft->addSpacing(5);
     topLeft->addStretch();
@@ -97,10 +101,8 @@ MainWindow::MainWindow()
     left->addLayout(topLeft);
     left->addWidget(list_view);
 
-
     QVBoxLayout * center = new QVBoxLayout();
     center->addWidget(my_view);
-
 
     QFrame * frame = new QFrame;
 

@@ -1,0 +1,34 @@
+QMainWindow {
+/*    background-color: #e1e2f2; */
+    background-color: #F2F2F2;
+}
+
+/*QListView::indicator:unchecked
+{
+	image:url(":images/unstarted.png")
+}*/
+
+QListView::text {
+}
+
+QListView::item {
+    border-radius: 10px;
+    background-color: #F2F2F2;
+}
+
+QListView::item:selected {
+    border: 4px solid #ed783d;
+    border-radius: 10px;
+    background-color: #F2F2F2;
+}
+
+QListView::item:hover {
+    background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                stop: 0 #FAFBFE, stop: 1 #DCDEF1);
+}
+
+QListView::icon {
+}
+
+
+

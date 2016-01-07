@@ -24,7 +24,6 @@ MyDelegate::MyDelegate(QObject * parent)
 
 void MyDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-
     QStyledItemDelegate::paint(painter, option, index);
 
 //      OK
@@ -114,15 +113,17 @@ QSize MyDelegate::sizeHint(const QStyleOptionViewItem & option, const QModelInde
     Q_UNUSED(option);
     Q_UNUSED(index);
 //    QPixmap pm = index.data(Qt::DecorationRole).value<QPixmap>();
-    return QSize(160, 180);
+    return QSize(170, 200);
 }
 
 QWidget * MyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-    Q_UNUSED(option);
+    //Q_UNUSED(option);
 
     ThumbnailEditor * te = new ThumbnailEditor(parent);
     connect(te, &ThumbnailEditor::action, this, &MyDelegate::setRotateLeft);
+
+
     return te;
 
 //    QPixmap pixmap(":images/completed.png");
@@ -157,7 +158,7 @@ void MyDelegate::setModelData(QWidget * editor, QAbstractItemModel * model, cons
 
 void MyDelegate::updateEditorGeometry(QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-    editor->setGeometry(option.rect.x() + 2, option.rect.y() + 2, editor->width(), editor->height());
+    editor->setGeometry(option.rect.x(), option.rect.y() + option.rect.height()/2 + 15, editor->width(), editor->height());
 }
 
 void MyDelegate::setRotateLeft()
