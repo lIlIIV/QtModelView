@@ -13,7 +13,6 @@ set(CMAKE_AUTOMOC ON)
 
 
 set(SRCS
-  clickable.cpp
   main.cpp
   main-window.cpp
   my-delegate.cpp
@@ -21,17 +20,18 @@ set(SRCS
   my-style.cpp
   my-view.cpp
   tools/dispatch.cpp
+  widgets/clickable.cpp
   widgets/thumbnail-editor.cpp
 )
 
 set(HDRS
-  clickable.hh
   main-window.hh
   my-delegate.hh
   my-model.hh
   my-style.hh
   my-view.hh
   tools/dispatch.hh
+  widgets/clickable.hh
   widgets/thumbnail-editor.hh
 ) 
 

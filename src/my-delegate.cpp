@@ -11,9 +11,8 @@
 #include <QPixmap>
 #include <QStyleOptionButton>
 
-
-#include "clickable.hh"
 #include "my-model.hh"
+//#include "widgets/clickable.hh"
 #include "widgets/thumbnail-editor.hh"
 
 MyDelegate::MyDelegate(QObject * parent)

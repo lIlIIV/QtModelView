@@ -9,9 +9,9 @@
 #include <QStringListModel>
 #include <QVBoxLayout>
 
-#include "clickable.hh"
 #include "my-view.hh"
 #include "my-style.hh"
+#include "widgets/clickable.hh"
 #include "widgets/thumbnail-editor.hh"
 
 MainWindow::MainWindow()

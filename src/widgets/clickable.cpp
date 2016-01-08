@@ -1,4 +1,4 @@
-#include "clickable.hh"
+#include "widgets/clickable.hh"
 
 Clickable::Clickable(const QPixmap & image, QWidget * parent)
     : QLabel(parent), saved_(false)

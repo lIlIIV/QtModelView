@@ -3,7 +3,7 @@
 
 #include <QWidget>
 
-#include "clickable.hh"
+#include "widgets/clickable.hh"
 
 class ThumbnailEditor: public QWidget
 {
