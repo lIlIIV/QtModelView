@@ -72,7 +72,7 @@ public:
 public slots:
     void selectAll(int state);
     void rotateChecked();
-    void action(ThumbnailEditor::Action action);
+//    void action(ThumbnailEditor::Action action);
 
 private slots:
     void UpdateThumbnail(const QFileInfo & fileInfo);

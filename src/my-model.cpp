@@ -17,27 +17,27 @@
 #include "tools/dispatch.hh"
 
 namespace {
-    const int W = 120;
-    const int H = 170;
+    const int A4_H = 140;
+    const int A4_W = (A4_H*21)/29;
     const QString default_image = ":images/unstarted.png";
 }
 
 MyData::MyData()
     : m_thumbnail(QPixmap(default_image)), m_checkState(false)
 {
-    m_thumbnail = m_thumbnail.scaled(W, H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    m_thumbnail = m_thumbnail.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
 MyData::MyData(const QFileInfo & fileInfo)
     : m_fileInfo(fileInfo), m_thumbnail(QPixmap(default_image)), m_checkState(false)
 {
-    m_thumbnail = m_thumbnail.scaled(W, H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    m_thumbnail = m_thumbnail.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
 MyData::MyData(const QFileInfo & fileInfo, const QPixmap & thumbnail, int checkState)
     : m_fileInfo(fileInfo), m_thumbnail(thumbnail), m_checkState(checkState)
 {
-    m_thumbnail = m_thumbnail.scaled(W, H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    m_thumbnail = m_thumbnail.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
 void MyData::loadThumbnailAsync(const QFileInfo & fileInfo)
@@ -52,7 +52,7 @@ void MyData::loadThumbnailAsync(const QFileInfo & fileInfo)
 
         }
 
-        img = img.scaled(W, H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        img = img.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
         QPixmap  pmap =  QPixmap::fromImage(img);
 
         dispatchAsyncMain(weak_this, [this, res, pmap, fileInfo] {
@@ -77,7 +77,8 @@ void MyData::loadThumbnailAsync(const QFileInfo & fileInfo)
 MyModel::MyModel(QObject * parent)
     : QAbstractListModel(parent)
 {
-   QDir scanner("/Users/liliaivanova/Desktop/Numbers");
+    QDir scanner("/Users/liliaivanova/.Ipso/Scanner");
+   //QDir scanner("/Users/liliaivanova/Desktop/Numbers");
 ////    QDir scanner("/Users/liliaivanova/Desktop");
 
 //    QStringList filters;
@@ -141,42 +142,21 @@ QVariant MyModel::data(const QModelIndex & index, int role) const
 
     switch(role)
 	{
-    case Qt::BackgroundRole:
-         if (row % 2 == 0)
-         {
-             return QBrush(QColor("#f2f2f2"));
-         }
-         else
-         {
-            return QBrush(QColor("#d9d9d9"));
-         }
-         break;
     case Qt::CheckStateRole:
         return m_files[row]->m_checkState;
         break;
     case Qt::DecorationRole:
         return m_files[row]->m_thumbnail;
         break;
-    case Qt::DisplayRole:
-        return row + 1;
-		break;
-    case Qt::EditRole:
-    case Qt::ForegroundRole:
-    case Qt::FontRole:
-        return QVariant();
-        break;
-    case Qt::TextAlignmentRole:
-        // Qt::AlignLeft, Qt::AlignRight, Qt::AlignHCenter, Qt::AlignJustify
-        return Qt::AlignHCenter;
-        break;
+ //   case Qt::DisplayRole:
+ //       return row + 1;
+//		break;
     case Qt::ToolTipRole:
         return m_files[row]->m_fileInfo.absoluteFilePath();
 		break;
-//    case Qt::SizeHintRole:
-//        return QSize(190, 190);
-//        break;
-    case Qt::StatusTipRole:
-        return "Status Tip"; // ??
+    case Qt::SizeHintRole:
+        return QSize(A4_W, A4_H);
+    break;
     default:
         return QVariant();
 		break;
@@ -429,7 +409,7 @@ bool MyModel::addRow(MyData * data)
 
         if (image.save(file_path) == true)
         {
-            image = image.scaled(W, H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            image = image.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
             QPixmap  pmap =  QPixmap::fromImage(image);
             setData(index, pmap, Qt::DecorationRole);
             return;
@@ -486,7 +466,8 @@ bool MyModel::addRow(MyData * data)
 
  void MyModel::retrieveFiles(const QString &path)
  {
-     QDir scanner("/Users/liliaivanova/Desktop/Numbers");
+     //QDir scanner("/Users/liliaivanova/Desktop/Numbers");
+     QDir scanner("/Users/liliaivanova/.Ipso/Scanner");
 
      QStringList filters;
      filters << "*.jpg" << "*.png";
@@ -539,7 +520,6 @@ void MyModel::UpdateThumbnail(const QFileInfo & fileInfo)
 
     if( in.isValid() )
     {
-        // setData(in, data(in, Qt::DecorationRole), Qt::DecorationRole);
         emit dataChanged(in, in, {Qt::DecorationRole});
     }
     else
@@ -549,20 +529,20 @@ void MyModel::UpdateThumbnail(const QFileInfo & fileInfo)
 }
 
 
-void MyModel::action(ThumbnailEditor::Action action)
-{
-    switch(action)
-    {
-    case ThumbnailEditor::Action::RotateLeft:
-        rotateChecked();
-        break;
-    case ThumbnailEditor::Action::RotateRight:
-        break;
-    case ThumbnailEditor::Action::Delete:
-        removeSelected();
-        break;
-    default:
-        break;
+//void MyModel::action(ThumbnailEditor::Action action)
+//{
+//    switch(action)
+//    {
+//    case ThumbnailEditor::Action::RotateLeft:
+//        rotateChecked();
+//        break;
+//    case ThumbnailEditor::Action::RotateRight:
+//        break;
+//    case ThumbnailEditor::Action::Delete:
+//        removeSelected();
+//        break;
+//    default:
+//        break;
 
-    }
-}
+//    }
+//}

@@ -14,33 +14,19 @@ MyStyle::MyStyle(QStyle * style)
 
 }
 
-
 void MyStyle::drawPrimitive(PrimitiveElement element, const QStyleOption * option, QPainter * painter, const QWidget * widget) const
 {
     if (element == QStyle::PE_IndicatorItemViewItemDrop)
     {
         painter->setRenderHint(QPainter::Antialiasing, true);
-
-//        QPalette palette;
-//        QColor c(palette.highlightedText().color());
-//        QPen pen(c);
-//        pen.setWidth(2);
-//        c.setAlpha(50);
-//        QBrush brush(c);
-
-//        painter->setPen(pen);
-//        painter->setBrush(brush);
-//        if(option->rect.height() == 0)
-//        {
-//            painter->drawEllipse(option->rect.topLeft(), 3, 3);
-//            painter->drawLine(QPoint(option->rect.topLeft().x()+3, option->rect.topLeft().y()), option->rect.topRight());
-//        }
-//        else
-//        {
-//            painter->drawLine(QPoint(option->rect.topLeft().x()+3, option->rect.topLeft().y()), option->rect.topRight());
-//            // painter->drawRoundedRect(option->rect, 5, 5);
-//        }
-        painter->drawLine(QPoint(option->rect.topLeft().x()+3, option->rect.topLeft().y()), option->rect.topRight());
+        QColor c("#a6a6a6");
+        QPen pen(c);
+        pen.setWidth(3);
+        c.setAlpha(50);
+        QBrush brush(c);
+        painter->setPen(pen);
+        painter->setBrush(brush);
+        painter->drawLine(QPoint(option->rect.topLeft().x() + 6, option->rect.topLeft().y() - 5), QPoint(option->rect.topRight().x() - 6, option->rect.topLeft().y() - 5));
     }
     else
     {

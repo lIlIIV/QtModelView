@@ -27,15 +27,17 @@ MainWindow::MainWindow()
     list_view->setViewMode(QListView::IconMode);
 
     // Use Grid Layout
-    list_view->setGridSize(QSize(200,200));
+    //list_view->setGridSize(QSize(160,200));
 
     // Items can be moved by the user only to grid positions
     list_view->setMovement(QListView::Snap);
 
     // Set size
-    list_view->setMaximumWidth(210);
-    list_view->setMinimumWidth(210);
-    list_view->setSpacing(50);
+    list_view->setMaximumWidth(170);
+    list_view->setMinimumWidth(170);
+    list_view->setSpacing(10);
+
+
 
     // Remove horisontal scroll
 
@@ -51,6 +53,14 @@ MainWindow::MainWindow()
     list_view->setDropIndicatorShown(true);
 
     list_view->setStyle(new MyStyle(list_view->style()));
+
+    QFile styleFile(":style/style.qss");
+    if (styleFile.open(QIODevice::ReadOnly))
+    {
+        QString StyleSheet(styleFile.readAll());
+        list_view->setStyleSheet(StyleSheet);
+    }
+
 
     // ..
 
@@ -71,14 +81,10 @@ MainWindow::MainWindow()
     my_view->setModel(my_model);
     my_view->setSelectionModel(list_view->selectionModel());
     my_view->setMinimumSize(QSize(600, 400));
-    my_view->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    //my_view->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 
     QCheckBox * selectAll = new QCheckBox("Select all");
     connect(selectAll, &QCheckBox::stateChanged, my_model, &MyModel::selectAll);
-
-//    QPixmap pixmap(":images/completed.png");
-//    Clickable * rotateAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-//    connect(rotateAll, &Clickable::clicked, my_model, &MyModel::rotateChecked);
 
     QPixmap pixmap(":images/unstarted.png");
     Clickable * deleteAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
@@ -87,12 +93,7 @@ MainWindow::MainWindow()
     QHBoxLayout * topLeft = new QHBoxLayout();
 
     topLeft->addWidget(selectAll);
-//    topLeft->addWidget(rotateAll);
     topLeft->addWidget(deleteAll);
-
-//    ThumbnailEditor * te = new ThumbnailEditor();
-//    topLeft->addWidget(te);
-//    connect(te, &ThumbnailEditor::action, my_model, &MyModel::action);
 
     topLeft->addSpacing(5);
     topLeft->addStretch();
@@ -101,14 +102,12 @@ MainWindow::MainWindow()
     left->addLayout(topLeft);
     left->addWidget(list_view);
 
-    QVBoxLayout * center = new QVBoxLayout();
-    center->addWidget(my_view);
 
     QFrame * frame = new QFrame;
 
     QHBoxLayout * frameLayout = new QHBoxLayout(frame);
     frameLayout->addLayout(left);
-    frameLayout->addLayout(center);
+    frameLayout->addWidget(my_view);
 
     setCentralWidget(frame);
 

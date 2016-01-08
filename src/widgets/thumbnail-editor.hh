@@ -5,30 +5,23 @@
 
 #include "clickable.hh"
 
-
-
 class ThumbnailEditor: public QWidget
 {
     Q_OBJECT
-    Q_ENUMS(Actions)
 public:
     ThumbnailEditor(QWidget * parent = nullptr);
-
-    enum class Action
-    {
-        RotateLeft = 0,
-        RotateRight,
-        Delete
-    };
     QSize sizeHint() const;
 
+    void done();
+    bool rotateThumbnail();
+    bool deleteThumbnail();
+
 signals:
-    void action(Action);
+    void edit();
 
 private:
-    Clickable * m_rotate_left;
-    Clickable * m_rotate_rigth;
-    Clickable * m_delete;
+    bool m_rotate;
+    bool m_delete;
 };
 
 #endif // THUMBNAIL_EDITOR_HH

@@ -26,6 +26,13 @@ void MyDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, 
 {
     QStyledItemDelegate::paint(painter, option, index);
 
+    QString display_index = QString("%1").arg(index.row()+1);
+    QRect text_rect(0, 0, 20, 20);
+
+    text_rect.moveTo(option.rect.x() + 5, option.rect.bottomLeft().y() - 20);
+
+    painter->drawText(text_rect , Qt::AlignCenter, display_index );
+
 //      OK
 //    painter->save();
 //    if (option.state & QStyle::State_Selected)
@@ -111,26 +118,17 @@ void MyDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, 
 QSize MyDelegate::sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
     Q_UNUSED(option);
-    Q_UNUSED(index);
-//    QPixmap pm = index.data(Qt::DecorationRole).value<QPixmap>();
-    return QSize(170, 200);
+    QSize icon = index.data(Qt::SizeHintRole).toSize();
+    return QSize( icon.width() + 40, icon.height() + 10);
 }
 
 QWidget * MyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-    //Q_UNUSED(option);
-
+    Q_UNUSED(option);
+    Q_UNUSED(index);
     ThumbnailEditor * te = new ThumbnailEditor(parent);
-    connect(te, &ThumbnailEditor::action, this, &MyDelegate::setRotateLeft);
-
-
+    connect(te, &ThumbnailEditor::edit, this, &MyDelegate::edit);
     return te;
-
-//    QPixmap pixmap(":images/completed.png");
-//    Clickable * rotate = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation), parent);
-//    connect(rotate, &Clickable::clicked, this, &MyDelegate::setRotateLeft);
-//    rotate->Saved(true);
-//    return rotate;
 }
 
 void MyDelegate::setEditorData(QWidget * editor, const QModelIndex & index) const
@@ -146,40 +144,37 @@ void MyDelegate::setModelData(QWidget * editor, QAbstractItemModel * model, cons
         return;
     }
 
-    m->rotateLeft(index);
-//    Clickable * cl =  dynamic_cast<Clickable *>(editor);
-//    if(!cl->isSaved())
-//    {
-//        m->rotateLeft(index);
-//        cl->Saved(true);
-//    }
+    ThumbnailEditor * th_editor = dynamic_cast<ThumbnailEditor *>(editor);
+    if(th_editor == nullptr)
+    {
+        return;
+    }
 
+    if(th_editor->rotateThumbnail())
+    {
+        m->rotateLeft(index);
+        th_editor->done();
+    }
+
+    if(th_editor->deleteThumbnail())
+    {
+        m->removeRow(index.row());
+        th_editor->done();
+    }
 }
 
 void MyDelegate::updateEditorGeometry(QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-    editor->setGeometry(option.rect.x(), option.rect.y() + option.rect.height()/2 + 15, editor->width(), editor->height());
+    editor->setGeometry(option.rect.x(), option.rect.y(), editor->width(), editor->height());
 }
 
-void MyDelegate::setRotateLeft()
+void MyDelegate::edit()
 {
     emit commitData(qobject_cast<QWidget *>(sender()));
 }
 
 bool MyDelegate::eventFilter(QObject * editor, QEvent * event)
 {
-//    Clickable * cl =  dynamic_cast<Clickable *>(editor);
-//    if(cl != nullptr && (event->type() == QEvent::MouseButtonPress || event->type() == QEvent::MouseButtonDblClick))
-//    {
-//        QMouseEvent * me = dynamic_cast<QMouseEvent *>(event);
-//        if(me != nullptr)
-//        {
-//            if( me->button() == Qt::LeftButton)
-//            {
-//                cl->Saved(false);
-//            }
-//        }
-//    }
     return QStyledItemDelegate::eventFilter(editor, event);
 }
 

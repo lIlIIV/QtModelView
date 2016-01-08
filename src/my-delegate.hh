@@ -26,12 +26,13 @@ public:
 
     bool editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index) override;
 
-signals:
+//signals:
 
-    void rotateLeft(const QModelIndex & index);
+    //void rotateLeft(const QModelIndex & index);
 
 private slots:
-    void setRotateLeft();
+    //void setRotateLeft();
+    void edit();
 
 protected:
     bool eventFilter(QObject * editor, QEvent * event) override;

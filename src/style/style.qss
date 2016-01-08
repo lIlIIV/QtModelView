@@ -1,34 +1,25 @@
-QMainWindow {
-/*    background-color: #e1e2f2; */
-    background-color: #F2F2F2;
-}
-
-/*QListView::indicator:unchecked
-{
-	image:url(":images/unstarted.png")
-}*/
-
-QListView::text {
-}
-
 QListView::item {
-    border-radius: 10px;
-    background-color: #F2F2F2;
-}
-
-QListView::item:selected {
-    border: 4px solid #ed783d;
-    border-radius: 10px;
-    background-color: #F2F2F2;
+    background-color: #d9d9d9;
+    border-radius: 5px;
+    margin: 0px;
 }
 
 QListView::item:hover {
     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                stop: 0 #FAFBFE, stop: 1 #DCDEF1);
+                                stop: 0 #d9d9d9, stop: 1 #a6a6a6);
 }
 
-QListView::icon {
+QListView::item:selected {
+    border: 4px solid #ed783d;
+    border-radius: 5px;
 }
+
+
+/*QListView::indicator:unchecked
+{
+        image:url(":images/unstarted.png")
+}*/
+
 
 
 
