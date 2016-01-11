@@ -30,22 +30,22 @@ DocumentViewer::DocumentViewer(QWidget *parent)
     m_scroll_area->setWidget(m_document);
     m_scroll_area->setAlignment(Qt::AlignCenter );
 
-    QPixmap pixmap(":images/plus.png");
-    Clickable * zoom_in = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    connect(zoom_in, &Clickable::clicked, this, &DocumentViewer::zoomIn);
+//    QPixmap pixmap(":images/plus.png");
+//    Clickable * zoom_in = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+//    connect(zoom_in, &Clickable::clicked, this, &DocumentViewer::zoomIn);
 
-    pixmap.load(":images/minus.png");
-    Clickable * zoom_out = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    connect(zoom_out, &Clickable::clicked, this, &DocumentViewer::zoomOut);
+//    pixmap.load(":images/minus.png");
+//    Clickable * zoom_out = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+//    connect(zoom_out, &Clickable::clicked, this, &DocumentViewer::zoomOut);
 
-    QHBoxLayout * h_layout = new QHBoxLayout();
+//    QHBoxLayout * h_layout = new QHBoxLayout();
 
-    h_layout->addWidget(zoom_in);
-    h_layout->addWidget(zoom_out);
-    h_layout->addStretch();
+//    h_layout->addWidget(zoom_in);
+//    h_layout->addWidget(zoom_out);
+//    h_layout->addStretch();
 
     QVBoxLayout * layout = new QVBoxLayout(this);
-    layout->addLayout(h_layout);
+//    layout->addLayout(h_layout);
     layout->addWidget(m_scroll_area);
 }
 

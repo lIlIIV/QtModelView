@@ -87,7 +87,10 @@ void MyView::dataChanged(const QModelIndex & topLeft, const QModelIndex & bottom
     Q_UNUSED(topLeft);
     Q_UNUSED(bottomRight);
     Q_UNUSED(roles);
-    //updateImage();
+    if(roles.contains(Qt::DecorationRole))
+    {
+        updateImage();
+    }
 }
 
 void MyView::selectionChanged(const QItemSelection & selected, const QItemSelection & deselected)

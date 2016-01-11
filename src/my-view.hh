@@ -17,6 +17,8 @@ public:
   void scrollTo(const QModelIndex & index, ScrollHint hint = EnsureVisible) override;
   QRect visualRect(const QModelIndex & index) const override;
 
+  DocumentViewer * documentViewer() { return m_document;}
+
 protected:
   int horizontalOffset() const override;
   bool isIndexHidden(const QModelIndex & index) const override;

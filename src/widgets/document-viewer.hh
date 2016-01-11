@@ -16,7 +16,7 @@ public:
 
     void keyPressEvent(QKeyEvent * event) override;
 
-private slots:
+public slots:
     void zoomIn();
     void zoomOut();
 

@@ -20,7 +20,6 @@ ThumbnailEditor::ThumbnailEditor(QWidget * parent)
     });
 
     connect(dele, &Clickable::clicked, this, [this]{
-        //emit action(Action::Delete);
         m_delete = true;
         emit edit();
     });

@@ -2,6 +2,7 @@
 
 #include <QDataWidgetMapper>
 #include <QCheckBox>
+#include <QGridLayout>
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QPushButton>
@@ -86,6 +87,8 @@ MainWindow::MainWindow()
 
     //my_view->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 
+    // .. Select all and delete
+
     QCheckBox * selectAll = new QCheckBox("Select all");
     connect(selectAll, &QCheckBox::stateChanged, my_model, &MyModel::selectAll);
 
@@ -93,31 +96,59 @@ MainWindow::MainWindow()
     Clickable * deleteAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     connect(deleteAll, &Clickable::clicked, my_model, &MyModel::removeSelected);
 
-
-//    DocumentViewer dv = new DocumentViewer();
-
+    pixmap.load(":images/rotate.png");
+    Clickable * rotate = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    connect(rotate, &Clickable::clicked, my_model, &MyModel::rotateChecked);
 
     QHBoxLayout * topLeft = new QHBoxLayout();
 
     topLeft->addWidget(selectAll);
     topLeft->addWidget(deleteAll);
+    topLeft->addWidget(rotate);
 
     topLeft->addSpacing(5);
     topLeft->addStretch();
 
+    // ... ZOOM
+
+    pixmap.load(":images/plus.png");
+    Clickable * zoom_in = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    connect(zoom_in, &Clickable::clicked, my_view->documentViewer(), &DocumentViewer::zoomIn);
+
+    pixmap.load(":images/minus.png");
+    Clickable * zoom_out = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    connect(zoom_out, &Clickable::clicked, my_view->documentViewer(), &DocumentViewer::zoomOut);
+
+    QHBoxLayout * zoom_layout = new QHBoxLayout();
+
+    zoom_layout->addWidget(zoom_in);
+    zoom_layout->addWidget(zoom_out);
+    zoom_layout->addSpacing(5);
+    zoom_layout->addStretch();
+
+   // ...
+
     QVBoxLayout * left = new QVBoxLayout();
-    left->addLayout(topLeft);
+ //   left->addLayout(topLeft);
     left->addWidget(list_view);
+
+    QVBoxLayout * right = new QVBoxLayout();
+//    right->addLayout(zoom_layout);
+    right->addWidget(my_view);
 
 
     QFrame * frame = new QFrame;
 
+//    QHBoxLayout * frameLayout = new QHBoxLayout(frame);
+//    frameLayout->addLayout(left);
+//    frameLayout->addLayout(right);
+//    frameLayout->addStretch();
 
-
-    QHBoxLayout * frameLayout = new QHBoxLayout(frame);
-    frameLayout->addLayout(left);
-    frameLayout->addWidget(my_view);
-    frameLayout->addStretch();
+    QGridLayout * frameLayout = new QGridLayout(frame);
+    frameLayout->addLayout(topLeft, 0, 0);
+    frameLayout->addLayout(left, 1, 0);
+    frameLayout->addLayout(zoom_layout, 0, 1);
+    frameLayout->addWidget(my_view, 1, 1);
 
     setCentralWidget(frame);
 
