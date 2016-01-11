@@ -45,7 +45,7 @@ QSize MyDelegate::sizeHint(const QStyleOptionViewItem & option, const QModelInde
 {
     Q_UNUSED(option);
     QSize icon = index.data(Qt::SizeHintRole).toSize();
-    return QSize( icon.width() + 40, icon.height() + 10);
+    return QSize( icon.width() + 40, icon.height() + 11);
 }
 
 QWidget * MyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
