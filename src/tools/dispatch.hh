@@ -13,6 +13,7 @@
 #include <QObject>
 #include <QPointer>
 
+
 typedef std::function<void()> FnBlock;
 
 class WorkerClass : public QObject
@@ -46,6 +47,8 @@ void dispatchAsync(QPointer<QObject> widget, QThread* thread, FnBlock block);
 
 void dispatchAsyncMain(QPointer<QObject> widget, FnBlock block);
 void dispatchSyncMain(QPointer<QObject> widget, FnBlock block);
+
+void end();
 
 // void dispatchAsyncMain(QPointer<QObject> widget, FnBlock block);
 // void dispatchSyncMain(QPointer<QObject> widget, FnBlock block);

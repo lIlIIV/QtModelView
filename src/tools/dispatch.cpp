@@ -133,3 +133,12 @@ void dispatchSyncMain(QPointer<QObject> widget, FnBlock block)
   });
 }
 
+void end()
+{
+    if (s_dispatch_thread!=nullptr && s_dispatch_thread->isRunning())
+    {
+       s_dispatch_thread->quit();
+       s_dispatch_thread->wait();
+    }
+}
+

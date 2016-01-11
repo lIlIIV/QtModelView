@@ -122,5 +122,5 @@ MainWindow::MainWindow()
 
 MainWindow::~MainWindow()
 {
-
+    end();
 }
