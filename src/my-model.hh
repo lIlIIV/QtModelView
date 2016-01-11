@@ -82,6 +82,7 @@ private slots:
 
 private:
     QModelIndex findByFilePath(const QFileInfo & file_path);
+    bool deleteFileAndRemoveRow(int index);
 
     // QList elements should be copyable QObject and subclasses arn't
     QList<MyData *> m_files;

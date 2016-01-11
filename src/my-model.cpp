@@ -72,8 +72,8 @@ void MyData::loadThumbnailAsync(const QFileInfo & fileInfo)
 MyModel::MyModel(QObject * parent)
     : QAbstractListModel(parent)
 {
-    QString scanner("/Users/liliaivanova/.Ipso/Scanner");
-    //QString scanner("/Users/liliaivanova/Desktop/Numbers");
+    // QString scanner("/Users/liliaivanova/.Ipso/Scanner");
+    QString scanner("/Users/liliaivanova/Desktop/Numbers");
     ////QString scanner("/Users/liliaivanova/Desktop");
     setDirectory(scanner);
 }
@@ -268,7 +268,7 @@ bool MyModel::addRow(MyData * data, int position)
         position = rowCount();
     }
     beginInsertRows(QModelIndex(), position, position);
-    m_files.append(data);
+    m_files.insert(position, data);
     endInsertRows();
     return true;
 }
@@ -289,16 +289,8 @@ bool MyModel::addRow(MyData * data, int position)
     beginRemoveRows(parent, row, row + count);
     for(int i = row; i < row + count; i ++)
     {
-        QFile file(m_files[i]->m_fileInfo.absoluteFilePath());
-        if(file.remove())
-        {
-            delete m_files[i];
-            m_files.removeAt(i);
-        }
-        else
-        {
-            // log error here
-        }
+        delete m_files[i];
+        m_files.removeAt(i);
     }
     endRemoveRows();
 
@@ -390,6 +382,25 @@ bool MyModel::addRow(MyData * data, int position)
      }
  }
 
+bool MyModel::deleteFileAndRemoveRow(int index)
+{
+    QFile file(m_files[index]->m_fileInfo.absoluteFilePath());
+    if(file.remove())
+    {
+        if(!removeRow(index))
+        {
+        return false;
+        }
+    }
+    else
+    {
+        // log error here
+        // error message here
+        return false;
+    }
+    return true;
+}
+
  bool MyModel::removeSelected()
  {
     int rows = rowCount();
@@ -397,7 +408,7 @@ bool MyModel::addRow(MyData * data, int position)
     {
         if(m_files[i]->m_checkState == Qt::Checked)
         {
-            if(!removeRow(i))
+            if(!deleteFileAndRemoveRow(i))
             {
                 return false;
             }
@@ -447,13 +458,13 @@ bool MyModel::addRow(MyData * data, int position)
          QString file_path = data(index(i,0), Qt::ToolTipRole).toString();
          if(!files.contains(file_path))
          {
-             if(!removeRow(i))
-             {
-                 // TODO Log errror here
-                 break;
-             }
-             rows--;
-             i--;
+            if(!removeRow(i))
+            {
+                return;
+            }
+
+            rows--;
+            i--;
          }
      }
 }
