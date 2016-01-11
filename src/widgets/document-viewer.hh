@@ -14,6 +14,8 @@ public:
     void displayNoData();
     void normalSize();
 
+    void keyPressEvent(QKeyEvent * event) override;
+
 private slots:
     void zoomIn();
     void zoomOut();

@@ -7,11 +7,11 @@
 ThumbnailEditor::ThumbnailEditor(QWidget * parent)
     : QWidget(parent), m_rotate(false), m_delete(false)
 {
-    QPixmap pixmap(":images/completed.png");
+    QPixmap pixmap(":images/rotate.png");
 
     Clickable * rotate = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
-    pixmap.load(":images/unstarted.png");
+    pixmap.load(":images/bin.png");
     Clickable * dele = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
     connect(rotate, &Clickable::clicked, this, [this]{

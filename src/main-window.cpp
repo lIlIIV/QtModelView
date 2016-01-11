@@ -10,12 +10,13 @@
 
 #include "my-view.hh"
 #include "my-style.hh"
+#include "tools/dispatch.hh"
 #include "widgets/clickable.hh"
-#include "widgets/thumbnail-editor.hh"
+#include "widgets/document-viewer.hh"
 
 namespace {
-    const int A4_W = 400; //(A4_H*21)/29;
-    const int A4_H = (29*A4_W)/21;
+    const int A4_W = 730; //400; //(A4_H*21)/29;
+    const int A4_H = 320; //(29*A4_W)/21;
     const QString default_image = ":images/unstarted.png";
 }
 
@@ -88,9 +89,13 @@ MainWindow::MainWindow()
     QCheckBox * selectAll = new QCheckBox("Select all");
     connect(selectAll, &QCheckBox::stateChanged, my_model, &MyModel::selectAll);
 
-    QPixmap pixmap(":images/unstarted.png");
+    QPixmap pixmap(":images/bin.png");
     Clickable * deleteAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     connect(deleteAll, &Clickable::clicked, my_model, &MyModel::removeSelected);
+
+
+//    DocumentViewer dv = new DocumentViewer();
+
 
     QHBoxLayout * topLeft = new QHBoxLayout();
 

@@ -9,6 +9,7 @@
 #include <QRect>
 #include <QScrollBar>
 #include <QVBoxLayout>
+#include <QWheelEvent>
 
 #include "widgets/clickable.hh"
 
@@ -18,20 +19,22 @@ DocumentViewer::DocumentViewer(QWidget *parent)
 {
     m_document->setText( tr("<i>No data.</i>") );
     m_document->setBackgroundRole(QPalette::Base);
-    //m_document->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
-    //m_document->setScaledContents(true);
-    m_document->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+
+    m_document->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    m_document->setScaledContents(true);
+
+    //m_document->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
     m_document->setAlignment( Qt::AlignCenter );
 
     m_scroll_area->setBackgroundRole(QPalette::Dark);
     m_scroll_area->setWidget(m_document);
     m_scroll_area->setAlignment(Qt::AlignCenter );
 
-    QPixmap pixmap(":images/uncompleted.png");
+    QPixmap pixmap(":images/plus.png");
     Clickable * zoom_in = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     connect(zoom_in, &Clickable::clicked, this, &DocumentViewer::zoomIn);
 
-    pixmap.load(":images/completed.png");
+    pixmap.load(":images/minus.png");
     Clickable * zoom_out = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
     connect(zoom_out, &Clickable::clicked, this, &DocumentViewer::zoomOut);
 
@@ -49,7 +52,9 @@ DocumentViewer::DocumentViewer(QWidget *parent)
 bool DocumentViewer::loadDocument(const QString & file_name)
 {
     QImageReader reader(file_name);
-    reader.setAutoTransform(true);
+    // reader.setAutoTransform(true);
+    // reader.setScaledSize(QSize());
+
     const QImage image = reader.read();
     if (image.isNull())
     {
@@ -60,10 +65,13 @@ bool DocumentViewer::loadDocument(const QString & file_name)
         m_document->adjustSize();
         return false;
     }
-    m_document->setPixmap(QPixmap::fromImage(image).scaledToHeight(800, Qt::SmoothTransformation));
+    QPixmap pixmap = QPixmap::fromImage(image).scaledToWidth(std::min(640, std::max(300, image.width())));
+    m_document->setPixmap(pixmap);
     m_scale_factor = 1.0;
 
     normalSize();
+
+    //m_scroll_area->setWidgetResizable(true);
 
 //    fitToWindowAct->setEnabled(true);
 //    updateActions();
@@ -96,9 +104,14 @@ void DocumentViewer::adjustScrollBar(QScrollBar *scrollBar, double factor)
 
 void DocumentViewer::scaleImage(double factor)
 {
-    Q_ASSERT(m_document->pixmap());
+    if(m_document->pixmap() == nullptr)
+    {
+        return;
+    }
+
     m_scale_factor *= factor;
-    m_document->resize(m_scale_factor * m_document->pixmap()->size());
+    QSize current_size = m_document->pixmap()->size();
+    m_document->resize(m_scale_factor * current_size);
 
     adjustScrollBar(m_scroll_area->horizontalScrollBar(), factor);
     adjustScrollBar(m_scroll_area->verticalScrollBar(), factor);
@@ -114,4 +127,39 @@ void DocumentViewer::zoomIn()
 void DocumentViewer::zoomOut()
 {
     scaleImage(0.8);
+}
+
+void DocumentViewer::keyPressEvent(QKeyEvent * event)
+{
+    if( event->key() == Qt::Key_0 )
+    {
+        normalSize();
+        event->accept();
+        return;
+    }
+
+    if( event->key() == Qt::Key_Plus )
+    {
+        zoomIn();
+        event->accept();
+        return;
+    }
+
+    if( event->key() == Qt::Key_Minus )
+    {
+        zoomOut();
+        event->accept();
+        return;
+    }
+
+    event->ignore();
+
+
+
+//    QPoint numPixels = event->pixelDelta();
+//    QPoint numDegrees = event->angleDelta() / 8;
+
+
+
+//    event->accept();
 }
