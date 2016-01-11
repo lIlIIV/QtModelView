@@ -1,7 +1,8 @@
 #include "thumbnail-editor.hh"
 
-#include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPixmap>
+#include <QVBoxLayout>
 
 ThumbnailEditor::ThumbnailEditor(QWidget * parent)
     : QWidget(parent), m_rotate(false), m_delete(false)
@@ -24,18 +25,15 @@ ThumbnailEditor::ThumbnailEditor(QWidget * parent)
         emit edit();
     });
 
-    QVBoxLayout * layout = new QVBoxLayout(this);
+    QHBoxLayout * layout = new QHBoxLayout();
     layout->addWidget(dele);
-
+    layout->addStretch();
     layout->addWidget(rotate);
     layout->setSpacing(5);
 
-    layout->setSizeConstraint(QLayout::SetFixedSize);
-}
-
-QSize ThumbnailEditor::sizeHint() const
-{
-  return QSize( 140, 140 );
+    QVBoxLayout * v_layout = new QVBoxLayout(this);
+    v_layout->addLayout(layout);
+    v_layout->addStretch();
 }
 
 void ThumbnailEditor::done()

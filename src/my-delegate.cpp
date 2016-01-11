@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QBoxLayout>
 #include <QEvent>
+#include <QFontMetrics>
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QMouseEvent>
@@ -12,11 +13,12 @@
 #include <QStyleOptionButton>
 
 #include "my-model.hh"
-//#include "widgets/clickable.hh"
 #include "widgets/thumbnail-editor.hh"
 
 MyDelegate::MyDelegate(QObject * parent)
-    : QStyledItemDelegate(parent)
+    : QStyledItemDelegate(parent),
+      m_page_nb_position_x(0), m_page_nb_position_y(1),
+        m_page_nb_margin_x(10), m_page_nb_margin_y(10)
 {
 
 }
@@ -25,93 +27,18 @@ void MyDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, 
 {
     QStyledItemDelegate::paint(painter, option, index);
 
+    QFontMetrics fm(option.font);
     QString display_index = QString("%1").arg(index.row()+1);
-    QRect text_rect(0, 0, 20, 20);
+    double text_width = fm.width(display_index);
+    double text_height = fm.height();
+    QRect text_rect(0, 0, text_width, text_height);
 
-    text_rect.moveTo(option.rect.x() + 5, option.rect.bottomLeft().y() - 20);
+    double x = m_page_nb_position_x * (option.rect.width() - text_width - 2. * m_page_nb_margin_x) + m_page_nb_margin_x;
+    double y = m_page_nb_position_y * (option.rect.height() - text_height - 2. * m_page_nb_margin_y) + m_page_nb_margin_y;
 
-    painter->drawText(text_rect , Qt::AlignCenter, display_index );
+    text_rect.moveTo(option.rect.x() + x, option.rect.y() + y);
 
-//      OK
-//    painter->save();
-//    if (option.state & QStyle::State_Selected)
-//    {
-//        // painter->fillRect(option.rect, option.palette.highlight());
-//        painter->fillRect(option.rect, QBrush(QColor("#ed783d")));
-//    }
-//    else
-//    {
-//        painter->fillRect(option.rect, QBrush(QColor("#6db8de")));
-
-//    }
-
-//    // ..
-
-//    QPixmap pm = index.data(Qt::DecorationRole).value<QPixmap>();
-
-//    painter->drawPixmap( option.rect.x() + 20, option.rect.y() + 4, pm.width(), pm.height(), pm);
-
-//    QString display_index = index.data(Qt::DisplayRole).toString();
-
-//    QRect text_rect(option.rect.x() + 2, option.rect.y() + option.rect.height() - 18 , 15, 15 );
-    
-//    painter->drawText(text_rect , Qt::AlignBottom, display_index );
-
-   // TESTS
-
-//    int checked_state = index.data(Qt::CheckStateRole).toInt();
-
-//////    QRect checkbox_rect(option.rect.x() + 2, option.rect.y() + 4, 15, 15 );
-
-////    QStyleOptionButton checkboxstyle;
-
-////    checkboxstyle.rect = option.rect;
-
-//////    checkboxstyle.rect = checkbox_rect;
-
-//////    checkboxstyle.rect.setLeft(option.rect.x() + 2);
-
-////    checkboxstyle.state = (checked_state == Qt::Checked) ? (QStyle::State_On | QStyle::State_Enabled) :
-////                                                           (QStyle::State_Off | QStyle::State_Enabled);
-
-////    QApplication::style()->drawControl(QStyle::CE_CheckBox, &checkboxstyle, painter);
-
-
-//    // Fill style options with item data
-//    const QStyle * style = QApplication::style();
-//    QStyleOptionButton opt;
-//    opt.state |= (checked_state == Qt::Checked) ? QStyle::State_On : QStyle::State_Off;
-//    opt.state |= QStyle::State_Enabled;
-//    //opt.text = text;
-//    opt.rect = option.rect;
-
-//    // Draw item data as CheckBox
-//    style->drawControl(QStyle::CE_CheckBox, &opt, painter);
-
-//    painter->restore();
-
-
-////    int checked_state = index.model()->data(index, Qt::CheckStateRole).toInt();
-
-////    QStyleOptionButton checkboxstyle;
-
-////    QRect checkbox_rect = QApplication::style()->subElementRect(QStyle::SE_CheckBoxIndicator, &checkboxstyle);
-
-////    checkboxstyle.rect = option.rect;
-
-////    checkboxstyle.rect.setLeft(option.rect.x() + option.rect.width()/2 - checkbox_rect.width()/2);
-
-////    if(checked_state == Qt::Checked)
-////    {
-////        checkboxstyle.state = QStyle::State_On|QStyle::State_Enabled;
-////    }
-////    else
-////    {
-////        checkboxstyle.state = QStyle::State_Off|QStyle::State_Enabled;
-////    }
-
-////    QApplication::style()->drawControl(QStyle::CE_CheckBox, &checkboxstyle, painter);
-
+    painter->drawText(text_rect , Qt::AlignCenter, display_index);
 }
 
 QSize MyDelegate::sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
@@ -164,7 +91,7 @@ void MyDelegate::setModelData(QWidget * editor, QAbstractItemModel * model, cons
 
 void MyDelegate::updateEditorGeometry(QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
-    editor->setGeometry(option.rect.x(), option.rect.y(), editor->width(), editor->height());
+    editor->setGeometry(option.rect);
 }
 
 void MyDelegate::edit()
@@ -172,12 +99,10 @@ void MyDelegate::edit()
     emit commitData(qobject_cast<QWidget *>(sender()));
 }
 
-bool MyDelegate::eventFilter(QObject * editor, QEvent * event)
+void MyDelegate::setPageNbPosition(double x, double y, double margin_x, double margin_y)
 {
-    return QStyledItemDelegate::eventFilter(editor, event);
-}
-
-bool MyDelegate::editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index)
-{
-    return QStyledItemDelegate::editorEvent(event, model, option, index);
+    m_page_nb_position_x = x;
+    m_page_nb_position_y = y;
+    m_page_nb_margin_x = margin_x;
+    m_page_nb_margin_y = margin_y;
 }

@@ -5,7 +5,6 @@
 #include <QHBoxLayout>
 #include <QLineEdit>
 #include <QPushButton>
-
 #include <QStringListModel>
 #include <QVBoxLayout>
 
@@ -13,6 +12,12 @@
 #include "my-style.hh"
 #include "widgets/clickable.hh"
 #include "widgets/thumbnail-editor.hh"
+
+namespace {
+    const int A4_W = 400; //(A4_H*21)/29;
+    const int A4_H = (29*A4_W)/21;
+    const QString default_image = ":images/unstarted.png";
+}
 
 MainWindow::MainWindow()
     : list_view(new QListView(this)),
@@ -37,8 +42,6 @@ MainWindow::MainWindow()
     list_view->setMinimumWidth(170);
     list_view->setSpacing(10);
 
-
-
     // Remove horisontal scroll
 
     list_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
@@ -60,8 +63,6 @@ MainWindow::MainWindow()
         QString StyleSheet(styleFile.readAll());
         list_view->setStyleSheet(StyleSheet);
     }
-
-
     // ..
 
     // Set the model
@@ -80,7 +81,8 @@ MainWindow::MainWindow()
 
     my_view->setModel(my_model);
     my_view->setSelectionModel(list_view->selectionModel());
-    my_view->setMinimumSize(QSize(600, 400));
+    my_view->setMinimumSize(QSize(A4_W, A4_H));
+
     //my_view->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
 
     QCheckBox * selectAll = new QCheckBox("Select all");
@@ -105,9 +107,12 @@ MainWindow::MainWindow()
 
     QFrame * frame = new QFrame;
 
+
+
     QHBoxLayout * frameLayout = new QHBoxLayout(frame);
     frameLayout->addLayout(left);
     frameLayout->addWidget(my_view);
+    frameLayout->addStretch();
 
     setCentralWidget(frame);
 

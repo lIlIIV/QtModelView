@@ -34,10 +34,3 @@ int main(int args, char * argv[])
 	return app.exec();
 }
 
-
-// QImage img(":images/completed.png");
-// img = img.scaled(30,30);
-// QIcon ico(QPixmap::fromImage(img));
-// QPushButton *button = new QPushButton;
-// button->setIcon(ico);
-// button->show();

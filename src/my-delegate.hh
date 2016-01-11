@@ -10,13 +10,13 @@ class MyDelegate: public QStyledItemDelegate
 public:
     MyDelegate(QObject * parent = 0);
 
+    void setPageNbPosition(double x, double y, double margin_x = 10, double margin_y = 10);
+
 	void paint(QPainter * painter, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
 
 	QSize sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const override;
 
     QWidget * createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
-
-    // bool editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index) override;
 
     void setEditorData(QWidget * editor, const QModelIndex & index) const override;
 
@@ -24,18 +24,14 @@ public:
 
     void updateEditorGeometry(QWidget * editor, const QStyleOptionViewItem & option, const QModelIndex & index) const override;
 
-    bool editorEvent(QEvent * event, QAbstractItemModel * model, const QStyleOptionViewItem & option, const QModelIndex & index) override;
-
-//signals:
-
-    //void rotateLeft(const QModelIndex & index);
-
 private slots:
-    //void setRotateLeft();
     void edit();
 
-protected:
-    bool eventFilter(QObject * editor, QEvent * event) override;
+private:
+    double m_page_nb_position_x;
+    double m_page_nb_position_y;
+    double m_page_nb_margin_x;
+    double m_page_nb_margin_y;
 };
 
 #endif // MY_DELEGATE

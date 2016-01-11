@@ -3,6 +3,7 @@
 
 #include <QAbstractListModel>
 #include <QAbstractTableModel>
+#include <QDir>
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QList>
@@ -34,7 +35,6 @@ signals:
     void thumbnailLoaded(const QFileInfo & fileInfo);
 };
 
-//bool operator==(const MyData & lhs, const MyData & rhs );
 
 class MyModel: public QAbstractListModel 
 {
@@ -63,9 +63,11 @@ public:
 
     void rotateLeft(const QModelIndex & index);
 
-    bool addRow(MyData * data);
+    bool addRow(MyData * data, int position = -1);
 
     bool removeSelected();
+
+    bool setDirectory(const QString & directory_path);
 
     //QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 	//QHash<int, QByteArray> QAbstractItemModel::roleNames() const;
@@ -76,7 +78,7 @@ public slots:
 
 private slots:
     void UpdateThumbnail(const QFileInfo & fileInfo);
-    void retrieveFiles(const QString & path = QString());
+    void retrieveFiles();
 
 private:
     QModelIndex findByFilePath(const QFileInfo & file_path);
@@ -84,6 +86,7 @@ private:
     // QList elements should be copyable QObject and subclasses arn't
     QList<MyData *> m_files;
     QFileSystemWatcher m_watcher;
+    QDir m_dir;
 };
 
 #endif

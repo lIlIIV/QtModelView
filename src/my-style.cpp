@@ -9,7 +9,8 @@
 #include <QStyleOption>
 
 MyStyle::MyStyle(QStyle * style)
-    : QProxyStyle(style)
+    : QProxyStyle(style),
+        m_position_x(6), m_position_y(5), m_color("#a6a6a6")
 {
 
 }
@@ -19,17 +20,29 @@ void MyStyle::drawPrimitive(PrimitiveElement element, const QStyleOption * optio
     if (element == QStyle::PE_IndicatorItemViewItemDrop)
     {
         painter->setRenderHint(QPainter::Antialiasing, true);
-        QColor c("#a6a6a6");
-        QPen pen(c);
+        QColor color(m_color);
+        QPen pen(color);
         pen.setWidth(3);
-        c.setAlpha(50);
-        QBrush brush(c);
+        color.setAlpha(50);
+        QBrush brush(color);
         painter->setPen(pen);
         painter->setBrush(brush);
-        painter->drawLine(QPoint(option->rect.topLeft().x() + 6, option->rect.topLeft().y() - 5), QPoint(option->rect.topRight().x() - 6, option->rect.topLeft().y() - 5));
+        painter->drawLine(QPoint(option->rect.topLeft().x() + m_position_x, option->rect.topLeft().y() - m_position_y),
+                          QPoint(option->rect.topRight().x() - m_position_x, option->rect.topLeft().y() - m_position_y));
     }
     else
     {
         QProxyStyle::drawPrimitive(element, option, painter, widget);
     }
+}
+
+void MyStyle::setDropIndicatorPosition(int x, int y)
+{
+    m_position_x = x;
+    m_position_y = y;
+}
+
+void MyStyle::setDropIndicatorColor(QColor color)
+{
+    m_color = color;
 }

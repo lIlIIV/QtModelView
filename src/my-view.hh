@@ -4,6 +4,8 @@
 #include <QAbstractItemView>
 #include <QLabel>
 
+#include "widgets/document-viewer.hh"
+
 class MyView : public QAbstractItemView
 {
     Q_OBJECT
@@ -29,7 +31,9 @@ protected slots:
 
 private:
   void updateImage();
-  QLabel * document_;
+  //QLabel * document_;
+  DocumentViewer * m_document;
+
 };
 
 #endif

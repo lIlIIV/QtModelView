@@ -10,7 +10,6 @@ class ThumbnailEditor: public QWidget
     Q_OBJECT
 public:
     ThumbnailEditor(QWidget * parent = nullptr);
-    QSize sizeHint() const;
 
     void done();
     bool rotateThumbnail();

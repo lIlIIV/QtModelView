@@ -1,21 +1,24 @@
 #include "my-view.hh"
 
-#include <QGridLayout>
+#include <QVBoxLayout>
 #include <QPixmap>
 #include <QScrollBar>
 
 
 MyView::MyView( QWidget * parent)
-    : QAbstractItemView(parent),
-      document_(new QLabel)
+    : QAbstractItemView(parent)
 {
-    QGridLayout * layout = new QGridLayout( this->viewport() );
-    layout->addWidget(document_, 0, 0);
+    m_document = new DocumentViewer(this);
+    QVBoxLayout * layout = new QVBoxLayout(this);
+    layout->addWidget(m_document);
+//    QGridLayout * layout = new QGridLayout( this->viewport() );
+//    layout->addWidget(m_document, 0, 0);
 
-    document_->setAlignment( Qt::AlignCenter );
-    document_->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+    //m_document->setAlignment( Qt::AlignCenter );
+    //m_document->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
 
-    document_->setText( tr("<i>No data.</i>") );
+//    document_->setText( tr("<i>No data.</i>") );
+
 }
 
 
@@ -96,19 +99,24 @@ void MyView::selectionChanged(const QItemSelection & selected, const QItemSelect
 
 void MyView::updateImage()
 {
-    QPixmap * pixmap;
+    //QPixmap * pixmap;
+    QString file_name;
     switch( selectionModel()->selection().indexes().count() )
     {
     case 0:
-      document_->setText( tr("<i>No data.</i>") );
+      //document_->setText( tr("<i>No data.</i>") );
+      m_document->displayNoData();
       break;
     case 1:
-      pixmap = new QPixmap(model()->data(currentIndex(), Qt::ToolTipRole).toString());
-      document_->setPixmap(*pixmap);
+      //pixmap = new QPixmap(model()->data(currentIndex(), Qt::ToolTipRole).toString());
+      //document_->setPixmap(*pixmap);
+      file_name = model()->data(currentIndex(), Qt::ToolTipRole).toString();
+      m_document->loadDocument(file_name);
       break;
     default:
       // Too many items selected.
-      document_->setText( tr("<i>Too many items selected.<br> Can only show one item at a time.</i>") );
+      // document_->setText( tr("<i>Too many items selected.<br> Can only show one item at a time.</i>") );
+      m_document->displayNoData();
     break;
     }
 }

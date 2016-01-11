@@ -21,6 +21,7 @@ set(SRCS
   my-view.cpp
   tools/dispatch.cpp
   widgets/clickable.cpp
+  widgets/document-viewer.cpp
   widgets/thumbnail-editor.cpp
 )
 
@@ -32,6 +33,7 @@ set(HDRS
   my-view.hh
   tools/dispatch.hh
   widgets/clickable.hh
+  widgets/document-viewer.hh
   widgets/thumbnail-editor.hh
 ) 
 

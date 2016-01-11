@@ -1,10 +1,9 @@
 #include "my-model.hh"
 
-#include <future>
 
 #include <QBrush>
-#include <QDir>
 #include <QFileInfoList>
+#include <QFile>
 #include <QImage>
 #include <QMessageBox>
 #include <QMimeData>
@@ -46,28 +45,24 @@ void MyData::loadThumbnailAsync(const QFileInfo & fileInfo)
 
     dispatchAsync(weak_this, [this, weak_this, fileInfo] {
         QImage img;
+        QPixmap  pmap;
         bool res = img.load(fileInfo.absoluteFilePath());
-        if(!res)
+        if(res)
         {
-
+            img = img.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+            pmap =  QPixmap::fromImage(img);
         }
-
-        img = img.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-        QPixmap  pmap =  QPixmap::fromImage(img);
-
         dispatchAsyncMain(weak_this, [this, res, pmap, fileInfo] {
-//             FIXME
-             if (res == false)
-             {
-                 QTimer::singleShot(1000, this, [this, fileInfo]{
-                    loadThumbnailAsync(fileInfo);
-                 });
-             }
-             else
-            if(res)
+            if (res)
             {
                 m_thumbnail = pmap;
                 thumbnailLoaded(fileInfo);
+            }
+            else
+            {
+                QTimer::singleShot(1000, this, [this, fileInfo] {
+                    loadThumbnailAsync(fileInfo);
+                });
             }
         });
     });
@@ -77,38 +72,10 @@ void MyData::loadThumbnailAsync(const QFileInfo & fileInfo)
 MyModel::MyModel(QObject * parent)
     : QAbstractListModel(parent)
 {
-    QDir scanner("/Users/liliaivanova/.Ipso/Scanner");
-   //QDir scanner("/Users/liliaivanova/Desktop/Numbers");
-////    QDir scanner("/Users/liliaivanova/Desktop");
-
-//    QStringList filters;
-//    filters << "*.jpg" << "*.png";
-
-//    QFileInfoList fileList = scanner.entryInfoList(filters, QDir::Files | QDir::NoSymLinks);
-
-//    for(int i = 0; i < fileList.count(); i ++)
-//    {
-//        MyData * data = new MyData(fileList[i]);
-//        data->loadThumbnailAsync(fileList[i]);
-
-//        m_files.append(data);
-////        m_files << data;
-////        filesInfo_ << fileList.at(i);
-////        QPixmap image;
-////        image.load(default_image);
-////        thumbnails_ << image.scaled(W, H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation); //, Qt::KeepAspectRatio, Qt::SmoothTransformation);
-////        checkState_ << Qt::Unchecked;
-////        loadThumbnailAsync(fileList[i]);
-//    }
-
-    retrieveFiles();
-    bool out = m_watcher.addPath(scanner.absolutePath());
-    if(!out)
-    {
-        // LOG/ERROR here
-    }
-
-    connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &MyModel::retrieveFiles);
+    QString scanner("/Users/liliaivanova/.Ipso/Scanner");
+    //QString scanner("/Users/liliaivanova/Desktop/Numbers");
+    ////QString scanner("/Users/liliaivanova/Desktop");
+    setDirectory(scanner);
 }
 
 MyModel::~MyModel()
@@ -272,31 +239,35 @@ bool MyModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
     QByteArray encodedData = data->data("image/my-type");
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
 
-    // FIXME get all elements and insert them in one call
     while (!stream.atEnd())
     {
         QPixmap pixmap;
-       int check_state;
-       QString tool_tip;
+        int check_state;
+        QString tool_tip;
 
-       stream >> pixmap >> check_state >> tool_tip;
+        stream >> pixmap >> check_state >> tool_tip;
 
-       beginInsertRows(QModelIndex(), endRow, endRow);
+        MyData * new_row = new MyData(tool_tip, pixmap, check_state);
 
-       MyData * newRow = new MyData(tool_tip, pixmap, check_state);
-       m_files.insert(endRow, newRow);
+        addRow(new_row, endRow);
 
-      endInsertRows();
-
-       ++endRow;
+        ++endRow;
     }
 
     return true;
 }
 
-bool MyModel::addRow(MyData * data)
+bool MyModel::addRow(MyData * data, int position)
 {
-    beginInsertRows(QModelIndex(), rowCount(), rowCount());
+    if(data == nullptr)
+    {
+        return false;
+    }
+    if(position < 0)
+    {
+        position = rowCount();
+    }
+    beginInsertRows(QModelIndex(), position, position);
     m_files.append(data);
     endInsertRows();
     return true;
@@ -318,8 +289,16 @@ bool MyModel::addRow(MyData * data)
     beginRemoveRows(parent, row, row + count);
     for(int i = row; i < row + count; i ++)
     {
-        delete m_files[i];
-        m_files.removeAt(i);
+        QFile file(m_files[i]->m_fileInfo.absoluteFilePath());
+        if(file.remove())
+        {
+            delete m_files[i];
+            m_files.removeAt(i);
+        }
+        else
+        {
+            // log error here
+        }
     }
     endRemoveRows();
 
@@ -345,37 +324,6 @@ bool MyModel::addRow(MyData * data)
  {
      return QAbstractItemModel::moveRows(sourceParent, sourceRow, count, destinationParent, destinationChild);
  }
-
-// void MyModel::loadThumbnailAsync(const QFileInfo & file_path)
-// {
-//     QPointer<QObject> weak_this(this);
-
-//     dispatchAsync(weak_this, [this, weak_this, file_path] {
-//         QImage img;
-//         bool res = img.load(file_path.absoluteFilePath());
-//         img = img.scaled(W, H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
-//         QPixmap  pmap =  QPixmap::fromImage(img);
-
-//         dispatchAsyncMain(weak_this, [this, res, pmap, file_path] {
-////             FIXME
-////             if (res == false)
-////             {
-////                 QTimer::singleShot(1000, this, [this, file_path]{
-////                    loadThumbnailAsync(file_path);
-////                 });
-////             }
-////             else
-//             if(res)
-//             {
-//                 QModelIndex index = findByFilePath(file_path);
-//                 if(index.isValid())
-//                 {
-//                     setData(index, QVariant(pmap), Qt::DecorationRole);
-//                 }
-//             }
-//         });
-//     });
-// }
 
  QModelIndex MyModel::findByFilePath(const QFileInfo & file_path)
  {
@@ -421,17 +369,13 @@ bool MyModel::addRow(MyData * data)
     msgBox.setInformativeText("la rotation a échoué");
     msgBox.setIcon(QMessageBox::Warning);
     msgBox.exec();
-    // QMessageBox::warning(this->parent(), "erreur", "la rotation a échoué");
  }
 
  void MyModel::selectAll(int state)
  {
     for(int i = 0; i < rowCount(); i++)
     {
-        if(m_files[i]->m_checkState != state)
-        {
-            setData(index(i, 0), state, Qt::CheckStateRole);
-        }
+        setData(index(i, 0), state, Qt::CheckStateRole);
     }
  }
 
@@ -464,29 +408,29 @@ bool MyModel::addRow(MyData * data)
     return true;
  }
 
- void MyModel::retrieveFiles(const QString &path)
+ void MyModel::retrieveFiles()
  {
-     //QDir scanner("/Users/liliaivanova/Desktop/Numbers");
-     QDir scanner("/Users/liliaivanova/.Ipso/Scanner");
+     if(!m_dir.exists())
+     {
+         return;
+     }
 
      QStringList filters;
      filters << "*.jpg" << "*.png";
 
-     QFileInfoList fileList = scanner.entryInfoList(filters, QDir::Files | QDir::NoSymLinks);
+     QFileInfoList fileList = m_dir.entryInfoList(filters, QDir::Files | QDir::NoSymLinks);
 
      QList<QString> files;
 
      for(int i = 0; i < fileList.count(); i ++)
      {
         MyData * data = new MyData(fileList[i]);
-        //data->loadThumbnailAsync(fileList[i]);
         files.append(fileList[i].absoluteFilePath());
 
         QModelIndex in = findByFilePath(fileList[i]);
 
         if( !in.isValid() )
         {
-            //m_files.append(data);
             addRow(data);
             connect(data, &MyData::thumbnailLoaded, this, &MyModel::UpdateThumbnail);
             data->loadThumbnailAsync(fileList[i]);
@@ -528,21 +472,27 @@ void MyModel::UpdateThumbnail(const QFileInfo & fileInfo)
     }
 }
 
+bool MyModel::setDirectory(const QString & directory_path)
+{
+    m_dir.setPath(directory_path);
+    if(!m_dir.exists())
+    {
+        if(!m_dir.mkdir(directory_path))
+        {
+            // Log error here
+            return false;
+        }
+        m_dir.cd(directory_path);
+    }
 
-//void MyModel::action(ThumbnailEditor::Action action)
-//{
-//    switch(action)
-//    {
-//    case ThumbnailEditor::Action::RotateLeft:
-//        rotateChecked();
-//        break;
-//    case ThumbnailEditor::Action::RotateRight:
-//        break;
-//    case ThumbnailEditor::Action::Delete:
-//        removeSelected();
-//        break;
-//    default:
-//        break;
+    retrieveFiles();
+    bool out = m_watcher.addPath(m_dir.absolutePath());
+    if(!out)
+    {
+        // LOG/ERROR here
+        return false;
+    }
 
-//    }
-//}
+    connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &MyModel::retrieveFiles);
+    return true;
+}
