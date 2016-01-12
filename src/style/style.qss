@@ -15,6 +15,10 @@ QListView::item:selected {
     border-radius: 1px;
 }
 
+QLabel {
+    color: "#a0a6ac";
+}
+
 
 /*QListView::indicator:unchecked
 {

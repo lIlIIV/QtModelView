@@ -58,11 +58,12 @@ bool DocumentViewer::loadDocument(const QString & file_name)
     const QImage image = reader.read();
     if (image.isNull())
     {
-        QMessageBox::information(this, QApplication::applicationDisplayName(),
-                                 tr("Cannot load %1.").arg(QDir::toNativeSeparators(file_name)));
-        //setWindowFilePath(QString());
-        m_document->setPixmap(QPixmap());
-        m_document->adjustSize();
+//        QMessageBox::information(this, QApplication::applicationDisplayName(),
+//                                 tr("Cannot load %1.").arg(QDir::toNativeSeparators(file_name)));
+//        //setWindowFilePath(QString());
+//        m_document->setPixmap(QPixmap());
+//        m_document->adjustSize();
+        displayNoData();
         return false;
     }
     QPixmap pixmap = QPixmap::fromImage(image).scaledToWidth(std::min(640, std::max(300, image.width())));

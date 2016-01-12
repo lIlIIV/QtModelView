@@ -84,7 +84,7 @@ void MyDelegate::setModelData(QWidget * editor, QAbstractItemModel * model, cons
 
     if(th_editor->deleteThumbnail())
     {
-        m->removeRow(index.row());
+        m->deleteFileAndRemoveRow(index.row());
         th_editor->done();
     }
 }

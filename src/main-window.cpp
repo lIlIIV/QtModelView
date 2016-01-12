@@ -4,6 +4,7 @@
 #include <QCheckBox>
 #include <QGridLayout>
 #include <QHBoxLayout>
+#include <QItemSelectionModel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QStringListModel>
@@ -28,6 +29,7 @@ MainWindow::MainWindow()
 {
     resize(600, 600);
 
+
     // Init list view
 
     // Display Icons
@@ -49,7 +51,7 @@ MainWindow::MainWindow()
     list_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     // Set selection mode : QAbstractItemView::ExtendedSelection, QAbstractItemView::SingleSelection, QAbstractItemView::ContiguousSelection
-    list_view->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    list_view->setSelectionMode(QAbstractItemView::SingleSelection);
 
     // Enable Drag and Drop mode : QAbstractItemView::NoDragDrop, .. QAbstractItemView::DragDrop, QAbstractItemView::InternalMove
     list_view->setDragDropMode(QAbstractItemView::InternalMove);
@@ -60,11 +62,14 @@ MainWindow::MainWindow()
     list_view->setStyle(new MyStyle(list_view->style()));
 
     QFile styleFile(":style/style.qss");
+    QString styleSheet;
     if (styleFile.open(QIODevice::ReadOnly))
     {
-        QString StyleSheet(styleFile.readAll());
-        list_view->setStyleSheet(StyleSheet);
+        styleSheet = styleFile.readAll();
+        // add log here
     }
+    list_view->setStyleSheet(styleSheet);
+
     // ..
 
     // Set the model
@@ -77,20 +82,60 @@ MainWindow::MainWindow()
 
     list_view->setEditTriggers(QAbstractItemView::DoubleClicked);
 
+
+
+    // ..
+
+    // Selection Model
+
+    QItemSelectionModel * selection_model = list_view->selectionModel();
+    selection_model->setModel(my_model);
+    if(my_model->index(0,0).isValid())
+    {
+        selection_model->setCurrentIndex(my_model->index(0,0), QItemSelectionModel::Select);
+    }
+
+    connect(my_model, &MyModel::select, this, [this, selection_model]
+        (int row)
+        {
+            if(my_model->index(row,0).isValid())
+            {
+                selection_model->clearSelection();
+                selection_model->setCurrentIndex(my_model->index(row,0), QItemSelectionModel::Select);
+            }
+        }
+    );
+
+//    connect(selection_model, &QItemSelectionModel::selectionChanged, this, [this, selection_model]
+//        (const QItemSelection & selected, const QItemSelection & deselected)
+//        {
+//            if(selected.isEmpty())
+//            {
+//                if(my_model->index(0, 0).isValid())
+//                {
+//                    selection_model->setCurrentIndex(my_model->index(0,0), QItemSelectionModel::Select);
+//                }
+//            }
+//        }
+//    );
+
     // Set the Single Item View
 
     MyView * my_view = new MyView();
 
     my_view->setModel(my_model);
-    my_view->setSelectionModel(list_view->selectionModel());
+    my_view->setSelectionModel(selection_model);
     my_view->setMinimumSize(QSize(A4_W, A4_H));
 
-    //my_view->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+    // ..
 
-    // .. Select all and delete
+    // Select all and delete
 
-    QCheckBox * selectAll = new QCheckBox("Select all");
+    QCheckBox * selectAll = new QCheckBox();
     connect(selectAll, &QCheckBox::stateChanged, my_model, &MyModel::selectAll);
+
+//    connect(my_model, )
+
 
     QPixmap pixmap(":images/bin.png");
     Clickable * deleteAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
@@ -126,6 +171,7 @@ MainWindow::MainWindow()
     zoom_layout->addSpacing(5);
     zoom_layout->addStretch();
 
+
    // ...
 
     QVBoxLayout * left = new QVBoxLayout();
@@ -135,6 +181,17 @@ MainWindow::MainWindow()
     QVBoxLayout * right = new QVBoxLayout();
 //    right->addLayout(zoom_layout);
     right->addWidget(my_view);
+
+
+    QLabel * row_nb = new QLabel(QString("- %1 -").arg(my_model->rowCount()));
+    row_nb->setAlignment(Qt::AlignCenter);
+    row_nb->setStyleSheet(styleSheet);
+    connect(my_model, &MyModel::rowNbChanged, this, [this, row_nb, my_view]
+        (int rows)
+        {
+            row_nb->setText(QString("- %1 -").arg(rows));
+        }
+    );
 
 
     QFrame * frame = new QFrame;
@@ -149,8 +206,12 @@ MainWindow::MainWindow()
     frameLayout->addLayout(left, 1, 0);
     frameLayout->addLayout(zoom_layout, 0, 1);
     frameLayout->addWidget(my_view, 1, 1);
+    frameLayout->addWidget(row_nb, 2, 0);
 
     setCentralWidget(frame);
+
+    list_view->setFocusPolicy(Qt::NoFocus);
+    list_view->setAutoScroll(true);
 
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     setWindowTitle(tr("My Models"));

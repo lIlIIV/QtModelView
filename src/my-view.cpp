@@ -97,7 +97,10 @@ void MyView::selectionChanged(const QItemSelection & selected, const QItemSelect
 {
     Q_UNUSED(selected);
     Q_UNUSED(deselected);
-    updateImage();
+    //if (selected.count() > 0)
+    {
+        updateImage();
+    }
 }
 
 void MyView::updateImage()
@@ -113,8 +116,11 @@ void MyView::updateImage()
     case 1:
       //pixmap = new QPixmap(model()->data(currentIndex(), Qt::ToolTipRole).toString());
       //document_->setPixmap(*pixmap);
-      file_name = model()->data(currentIndex(), Qt::ToolTipRole).toString();
-      m_document->loadDocument(file_name);
+        if(currentIndex().isValid())
+        {
+            file_name = model()->data(currentIndex(), Qt::ToolTipRole).toString();
+            m_document->loadDocument(file_name);
+        }
       break;
     default:
       // Too many items selected.

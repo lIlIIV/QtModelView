@@ -7,6 +7,7 @@
 #include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QList>
+#include <QMap>
 #include <QModelIndex>
 #include <QPixmap>
 #include <QVariant>
@@ -69,8 +70,16 @@ public:
 
     bool setDirectory(const QString & directory_path);
 
+    bool deleteFileAndRemoveRow(int index);
+
+
+
     //QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 	//QHash<int, QByteArray> QAbstractItemModel::roleNames() const;
+signals:
+    void select(int row);
+    void rowNbChanged(int row_nb);
+
 public slots:
     void selectAll(int state);
     void rotateChecked();
@@ -82,12 +91,16 @@ private slots:
 
 private:
     QModelIndex findByFilePath(const QFileInfo & file_path);
-    bool deleteFileAndRemoveRow(int index);
+
 
     // QList elements should be copyable QObject and subclasses arn't
     QList<MyData *> m_files;
     QFileSystemWatcher m_watcher;
     QDir m_dir;
+
+    int m_dropperItemIndex;
+
+    Qt::CheckState m_checkState;
 };
 
 #endif

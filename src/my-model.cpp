@@ -22,13 +22,13 @@ namespace {
 }
 
 MyData::MyData()
-    : m_thumbnail(QPixmap(default_image)), m_checkState(false)
+    : m_thumbnail(QPixmap(default_image)), m_checkState(true)
 {
     m_thumbnail = m_thumbnail.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
 MyData::MyData(const QFileInfo & fileInfo)
-    : m_fileInfo(fileInfo), m_thumbnail(QPixmap(default_image)), m_checkState(false)
+    : m_fileInfo(fileInfo), m_thumbnail(QPixmap(default_image)), m_checkState(true)
 {
     m_thumbnail = m_thumbnail.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
@@ -70,7 +70,8 @@ void MyData::loadThumbnailAsync(const QFileInfo & fileInfo)
 
 
 MyModel::MyModel(QObject * parent)
-    : QAbstractListModel(parent)
+    : QAbstractListModel(parent),
+      m_dropperItemIndex(-1), m_checkState(Qt::Unchecked)
 {
     // QString scanner("/Users/liliaivanova/.Ipso/Scanner");
     QString scanner("/Users/liliaivanova/Desktop/Numbers");
@@ -251,19 +252,20 @@ bool MyModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
 
         addRow(new_row, endRow);
 
+        m_dropperItemIndex = endRow;
+
         ++endRow;
     }
-
     return true;
 }
 
 bool MyModel::addRow(MyData * data, int position)
 {
-    if(data == nullptr)
+    if (data == nullptr)
     {
         return false;
     }
-    if(position < 0)
+    if (position < 0)
     {
         position = rowCount();
     }
@@ -291,8 +293,17 @@ bool MyModel::addRow(MyData * data, int position)
     {
         delete m_files[i];
         m_files.removeAt(i);
+        row--;
+        count--;
     }
     endRemoveRows();
+
+    // Manage selection
+    if(m_dropperItemIndex >= 0)
+    {
+        emit select(m_dropperItemIndex);
+        m_dropperItemIndex = -1;
+    }
 
     return true;
  }
@@ -301,7 +312,6 @@ bool MyModel::addRow(MyData * data, int position)
  {
     return QAbstractItemModel::insertRows(row, count, parent);
  }
-
 
  bool MyModel::canDropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent) const
  {
@@ -384,26 +394,34 @@ bool MyModel::addRow(MyData * data, int position)
 
 bool MyModel::deleteFileAndRemoveRow(int index)
 {
+    int out = true;
     QFile file(m_files[index]->m_fileInfo.absoluteFilePath());
     if(file.remove())
     {
         if(!removeRow(index))
         {
-        return false;
+            out = false;
+        }
+        else
+        {
+            emit rowNbChanged(rowCount());
         }
     }
     else
     {
         // log error here
         // error message here
-        return false;
+        out = false;
     }
-    return true;
+
+    return out;
 }
 
  bool MyModel::removeSelected()
  {
+
     int rows = rowCount();
+
     for(int i = 0; i < rows; i++)
     {
         if(m_files[i]->m_checkState == Qt::Checked)
@@ -416,6 +434,8 @@ bool MyModel::deleteFileAndRemoveRow(int index)
             i--;
         }
     }
+
+
     return true;
  }
 
@@ -433,6 +453,8 @@ bool MyModel::deleteFileAndRemoveRow(int index)
 
      QList<QString> files;
 
+     int rows_nb_before = rowCount();
+
      for(int i = 0; i < fileList.count(); i ++)
      {
         MyData * data = new MyData(fileList[i]);
@@ -444,7 +466,7 @@ bool MyModel::deleteFileAndRemoveRow(int index)
         {
             addRow(data);
             connect(data, &MyData::thumbnailLoaded, this, &MyModel::UpdateThumbnail);
-            data->loadThumbnailAsync(fileList[i]);
+            data->loadThumbnailAsync(fileList[i]); 
         }
         else
         {
@@ -467,6 +489,16 @@ bool MyModel::deleteFileAndRemoveRow(int index)
             i--;
          }
      }
+
+    // Manage selection and display current row number
+    if(rows_nb_before != rowCount())
+    {
+        emit rowNbChanged(rowCount());
+        if(rows_nb_before == 0)
+        {
+            emit select(0);
+        }
+    }
 }
 
 void MyModel::UpdateThumbnail(const QFileInfo & fileInfo)
