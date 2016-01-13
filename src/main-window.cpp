@@ -29,7 +29,6 @@ MainWindow::MainWindow()
 {
     resize(600, 600);
 
-
     // Init list view
 
     // Display Icons
@@ -51,7 +50,7 @@ MainWindow::MainWindow()
     list_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
     // Set selection mode : QAbstractItemView::ExtendedSelection, QAbstractItemView::SingleSelection, QAbstractItemView::ContiguousSelection
-    list_view->setSelectionMode(QAbstractItemView::SingleSelection);
+    list_view->setSelectionMode(QAbstractItemView::ExtendedSelection);
 
     // Enable Drag and Drop mode : QAbstractItemView::NoDragDrop, .. QAbstractItemView::DragDrop, QAbstractItemView::InternalMove
     list_view->setDragDropMode(QAbstractItemView::InternalMove);
@@ -59,6 +58,7 @@ MainWindow::MainWindow()
     // Show Drop indicator
     list_view->setDropIndicatorShown(true);
 
+    // Set style
     list_view->setStyle(new MyStyle(list_view->style()));
 
     QFile styleFile(":style/style.qss");
@@ -69,6 +69,11 @@ MainWindow::MainWindow()
         // add log here
     }
     list_view->setStyleSheet(styleSheet);
+
+    // (Un)Set Focus
+
+    list_view->setFocusPolicy(Qt::NoFocus);
+
 
     // ..
 
@@ -90,34 +95,6 @@ MainWindow::MainWindow()
 
     QItemSelectionModel * selection_model = list_view->selectionModel();
     selection_model->setModel(my_model);
-    if(my_model->index(0,0).isValid())
-    {
-        selection_model->setCurrentIndex(my_model->index(0,0), QItemSelectionModel::Select);
-    }
-
-    connect(my_model, &MyModel::select, this, [this, selection_model]
-        (int row)
-        {
-            if(my_model->index(row,0).isValid())
-            {
-                selection_model->clearSelection();
-                selection_model->setCurrentIndex(my_model->index(row,0), QItemSelectionModel::Select);
-            }
-        }
-    );
-
-//    connect(selection_model, &QItemSelectionModel::selectionChanged, this, [this, selection_model]
-//        (const QItemSelection & selected, const QItemSelection & deselected)
-//        {
-//            if(selected.isEmpty())
-//            {
-//                if(my_model->index(0, 0).isValid())
-//                {
-//                    selection_model->setCurrentIndex(my_model->index(0,0), QItemSelectionModel::Select);
-//                }
-//            }
-//        }
-//    );
 
     // Set the Single Item View
 
@@ -209,9 +186,6 @@ MainWindow::MainWindow()
     frameLayout->addWidget(row_nb, 2, 0);
 
     setCentralWidget(frame);
-
-    list_view->setFocusPolicy(Qt::NoFocus);
-    list_view->setAutoScroll(true);
 
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     setWindowTitle(tr("My Models"));

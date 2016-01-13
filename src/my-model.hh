@@ -77,7 +77,6 @@ public:
     //QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 	//QHash<int, QByteArray> QAbstractItemModel::roleNames() const;
 signals:
-    void select(int row);
     void rowNbChanged(int row_nb);
 
 public slots:
@@ -97,10 +96,6 @@ private:
     QList<MyData *> m_files;
     QFileSystemWatcher m_watcher;
     QDir m_dir;
-
-    int m_dropperItemIndex;
-
-    Qt::CheckState m_checkState;
 };
 
 #endif

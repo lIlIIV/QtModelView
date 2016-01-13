@@ -70,8 +70,7 @@ void MyData::loadThumbnailAsync(const QFileInfo & fileInfo)
 
 
 MyModel::MyModel(QObject * parent)
-    : QAbstractListModel(parent),
-      m_dropperItemIndex(-1), m_checkState(Qt::Unchecked)
+    : QAbstractListModel(parent)
 {
     // QString scanner("/Users/liliaivanova/.Ipso/Scanner");
     QString scanner("/Users/liliaivanova/Desktop/Numbers");
@@ -252,8 +251,6 @@ bool MyModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
 
         addRow(new_row, endRow);
 
-        m_dropperItemIndex = endRow;
-
         ++endRow;
     }
     return true;
@@ -297,14 +294,6 @@ bool MyModel::addRow(MyData * data, int position)
         count--;
     }
     endRemoveRows();
-
-    // Manage selection
-    if(m_dropperItemIndex >= 0)
-    {
-        emit select(m_dropperItemIndex);
-        m_dropperItemIndex = -1;
-    }
-
     return true;
  }
 
@@ -490,14 +479,10 @@ bool MyModel::deleteFileAndRemoveRow(int index)
          }
      }
 
-    // Manage selection and display current row number
+    // display current row number
     if(rows_nb_before != rowCount())
     {
         emit rowNbChanged(rowCount());
-        if(rows_nb_before == 0)
-        {
-            emit select(0);
-        }
     }
 }
 

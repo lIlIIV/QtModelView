@@ -11,7 +11,7 @@ class DocumentViewer: public QWidget
 public:
     DocumentViewer(QWidget * parent = nullptr);
     bool loadDocument(const QString & file_name);
-    void displayNoData();
+    void setText(const QString & text);
     void normalSize();
 
     void keyPressEvent(QKeyEvent * event) override;

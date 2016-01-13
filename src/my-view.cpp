@@ -11,14 +11,6 @@ MyView::MyView( QWidget * parent)
     m_document = new DocumentViewer(this);
     QVBoxLayout * layout = new QVBoxLayout(this);
     layout->addWidget(m_document);
-//    QGridLayout * layout = new QGridLayout( this->viewport() );
-//    layout->addWidget(m_document, 0, 0);
-
-    //m_document->setAlignment( Qt::AlignCenter );
-    //m_document->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-
-//    document_->setText( tr("<i>No data.</i>") );
-
 }
 
 
@@ -63,6 +55,8 @@ bool MyView::isIndexHidden( const QModelIndex &index ) const
 QModelIndex MyView::moveCursor( CursorAction cursorAction,
                         Qt::KeyboardModifiers modifiers )
 {
+    Q_UNUSED(cursorAction);
+    Q_UNUSED(modifiers);
     return currentIndex();
 }
 
@@ -97,10 +91,7 @@ void MyView::selectionChanged(const QItemSelection & selected, const QItemSelect
 {
     Q_UNUSED(selected);
     Q_UNUSED(deselected);
-    //if (selected.count() > 0)
-    {
-        updateImage();
-    }
+    updateImage();
 }
 
 void MyView::updateImage()
@@ -110,8 +101,7 @@ void MyView::updateImage()
     switch( selectionModel()->selection().indexes().count() )
     {
     case 0:
-      //document_->setText( tr("<i>No data.</i>") );
-      m_document->displayNoData();
+      m_document->setText(tr("<i>No data.</i>"));
       break;
     case 1:
       //pixmap = new QPixmap(model()->data(currentIndex(), Qt::ToolTipRole).toString());
@@ -125,7 +115,7 @@ void MyView::updateImage()
     default:
       // Too many items selected.
       // document_->setText( tr("<i>Too many items selected.<br> Can only show one item at a time.</i>") );
-      m_document->displayNoData();
+      m_document->setText( QString(tr("<i>%1 items selected.<br> Can only show one item at a time.</i>")).arg(selectionModel()->selection().indexes().count()) );
     break;
     }
 }

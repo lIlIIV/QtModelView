@@ -63,7 +63,7 @@ bool DocumentViewer::loadDocument(const QString & file_name)
 //        //setWindowFilePath(QString());
 //        m_document->setPixmap(QPixmap());
 //        m_document->adjustSize();
-        displayNoData();
+        setText(tr("<i>No data.</i>"));
         return false;
     }
     QPixmap pixmap = QPixmap::fromImage(image).scaledToWidth(std::min(640, std::max(300, image.width())));
@@ -85,9 +85,9 @@ bool DocumentViewer::loadDocument(const QString & file_name)
 }
 
 
-void DocumentViewer::displayNoData()
+void DocumentViewer::setText(const QString & text)
 {
-    m_document->setText( tr("<i>No data.</i>") );
+    m_document->setText( text );
     m_document->adjustSize();
 }
 

@@ -33,7 +33,6 @@ protected slots:
 
 private:
   void updateImage();
-  //QLabel * document_;
   DocumentViewer * m_document;
 
 };
