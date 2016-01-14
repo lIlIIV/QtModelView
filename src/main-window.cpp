@@ -13,53 +13,21 @@
 #include "my-view.hh"
 #include "my-style.hh"
 #include "tools/dispatch.hh"
-#include "widgets/clickable.hh"
 #include "widgets/document-viewer.hh"
 
 namespace {
-    const int A4_W = 730; //400; //(A4_H*21)/29;
-    const int A4_H = 320; //(29*A4_W)/21;
     const QString default_image = ":images/unstarted.png";
 }
 
 MainWindow::MainWindow()
-    : list_view(new QListView(this)),
-      my_model(new MyModel(this)),
-      my_delegate(new MyDelegate(this))
+    : grid_view(new QListView(this)),
+        single_file_view(new SingleFileView(this)),
+        my_model(new MyModel(this)),
+        my_delegate(new MyDelegate(this)),
+        selection_model(new QItemSelectionModel(my_model, this)),
+        m_rows(0)
 {
-    resize(600, 600);
-
-    // Init list view
-
-    // Display Icons
-    list_view->setViewMode(QListView::IconMode);
-
-    // Use Grid Layout
-    //list_view->setGridSize(QSize(160,200));
-
-    // Items can be moved by the user only to grid positions
-    list_view->setMovement(QListView::Snap);
-
-    // Set size
-    list_view->setMaximumWidth(170);
-    list_view->setMinimumWidth(170);
-    list_view->setSpacing(10);
-
-    // Remove horisontal scroll
-
-    list_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-
-    // Set selection mode : QAbstractItemView::ExtendedSelection, QAbstractItemView::SingleSelection, QAbstractItemView::ContiguousSelection
-    list_view->setSelectionMode(QAbstractItemView::ExtendedSelection);
-
-    // Enable Drag and Drop mode : QAbstractItemView::NoDragDrop, .. QAbstractItemView::DragDrop, QAbstractItemView::InternalMove
-    list_view->setDragDropMode(QAbstractItemView::InternalMove);
-
-    // Show Drop indicator
-    list_view->setDropIndicatorShown(true);
-
-    // Set style
-    list_view->setStyle(new MyStyle(list_view->style()));
+    resize(1200, 600);
 
     QFile styleFile(":style/style.qss");
     QString styleSheet;
@@ -68,130 +36,264 @@ MainWindow::MainWindow()
         styleSheet = styleFile.readAll();
         // add log here
     }
-    list_view->setStyleSheet(styleSheet);
 
-    // (Un)Set Focus
-
-    list_view->setFocusPolicy(Qt::NoFocus);
-
-
-    // ..
-
-    // Set the model
-
-    list_view->setModel(my_model);
-
+    // Single file view
+    // Set the model to thumbnail view
+    single_file_view->setModel(my_model);
     // Set the delegate
+    single_file_view->setThumbnailDelegate(my_delegate);
+    // Set the stylesheet
+    single_file_view->setThumbnailStyleSheet(styleSheet);
+    // Set the selection model
+    single_file_view->setSelectionModel(selection_model);
 
-    list_view->setItemDelegate(my_delegate);
+    // Grid view
+    initGridView(styleSheet);
+    // Set the grid view
+    grid_view->setModel(my_model);
+    // Set the delegate
+    grid_view->setItemDelegate(my_delegate);
+    // Set the selection model
+    grid_view->setSelectionModel(selection_model);
 
-    list_view->setEditTriggers(QAbstractItemView::DoubleClicked);
+    // actions
+    initSelectAll(styleSheet);
 
+    initDleleteSelectedButton();
 
+    initRotateSelectedButton();
 
-    // ..
+    initZoomButtons();
 
-    // Selection Model
-
-    QItemSelectionModel * selection_model = list_view->selectionModel();
-    selection_model->setModel(my_model);
-
-    // Set the Single Item View
-
-    MyView * my_view = new MyView();
-
-    my_view->setModel(my_model);
-    my_view->setSelectionModel(selection_model);
-    my_view->setMinimumSize(QSize(A4_W, A4_H));
-
-    // ..
-
-    // Select all and delete
-
-    QCheckBox * selectAll = new QCheckBox();
-    connect(selectAll, &QCheckBox::stateChanged, my_model, &MyModel::selectAll);
-
-//    connect(my_model, )
-
-
-    QPixmap pixmap(":images/bin.png");
-    Clickable * deleteAll = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    connect(deleteAll, &Clickable::clicked, my_model, &MyModel::removeSelected);
-
-    pixmap.load(":images/rotate.png");
-    Clickable * rotate = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    connect(rotate, &Clickable::clicked, my_model, &MyModel::rotateChecked);
-
-    QHBoxLayout * topLeft = new QHBoxLayout();
-
-    topLeft->addWidget(selectAll);
-    topLeft->addWidget(deleteAll);
-    topLeft->addWidget(rotate);
-
-    topLeft->addSpacing(5);
-    topLeft->addStretch();
-
-    // ... ZOOM
-
-    pixmap.load(":images/plus.png");
-    Clickable * zoom_in = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    connect(zoom_in, &Clickable::clicked, my_view->documentViewer(), &DocumentViewer::zoomIn);
-
-    pixmap.load(":images/minus.png");
-    Clickable * zoom_out = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    connect(zoom_out, &Clickable::clicked, my_view->documentViewer(), &DocumentViewer::zoomOut);
-
-    QHBoxLayout * zoom_layout = new QHBoxLayout();
-
-    zoom_layout->addWidget(zoom_in);
-    zoom_layout->addWidget(zoom_out);
-    zoom_layout->addSpacing(5);
-    zoom_layout->addStretch();
-
-
-   // ...
-
-    QVBoxLayout * left = new QVBoxLayout();
- //   left->addLayout(topLeft);
-    left->addWidget(list_view);
-
-    QVBoxLayout * right = new QVBoxLayout();
-//    right->addLayout(zoom_layout);
-    right->addWidget(my_view);
-
+    initViewSelector();
 
     QLabel * row_nb = new QLabel(QString("- %1 -").arg(my_model->rowCount()));
     row_nb->setAlignment(Qt::AlignCenter);
     row_nb->setStyleSheet(styleSheet);
-    connect(my_model, &MyModel::rowNbChanged, this, [this, row_nb, my_view]
-        (int rows)
+    connect(my_model, &MyModel::rowAdded, this, [this, row_nb]
+        (int row)
         {
-            row_nb->setText(QString("- %1 -").arg(rows));
+            row_nb->setText(QString("- %1 -").arg(++m_rows));
+
+//            // FIXME This is very slow
+//            if(my_model->index(row, 0).isValid())
+//            {
+//                selection_model->select(my_model->index(row, 0), QItemSelectionModel::Select);
+//            }
         }
     );
 
+    connect(my_model, &MyModel::rowRemoved, this, [this, row_nb]{
+            row_nb->setText(QString("- %1 -").arg(--m_rows));
+        }
+    );
+
+//    QString scanner("/Users/liliaivanova/.Ipso/Scanner");
+    QString scanner("/Users/liliaivanova/Desktop/Numbers");
+    ////QString scanner("/Users/liliaivanova/Desktop");
+    my_model->setDirectory(scanner);
+
+//    if (my_model->rowCount() > 0)
+//    {
+//        select_all->setChecked(true);
+//    }
+
+
+    connect(my_model, &MyModel::dragStarted, this, [this]{
+       grid_view->setSpacing(20);
+    });
+
+    connect(my_model, &MyModel::dragEnded, this, [this]{
+       grid_view->setSpacing(5);
+    });
+
+    QHBoxLayout * zoom_layout = new QHBoxLayout();
+
+    zoom_layout->addStretch();
+    zoom_layout->addWidget(zoom_in);
+    zoom_layout->addWidget(zoom_out);
+    zoom_layout->addSpacing(5);
+
+    QHBoxLayout * top = new QHBoxLayout();
+
+    top->addSpacing(5);
+    top->addWidget(view_selector);
+    top->addWidget(select_all);
+    top->addWidget(delete_selected);
+    top->addWidget(rotate_selected);
+    top->addStretch();
+    top->addLayout(zoom_layout);
+    // ...
 
     QFrame * frame = new QFrame;
 
-//    QHBoxLayout * frameLayout = new QHBoxLayout(frame);
-//    frameLayout->addLayout(left);
-//    frameLayout->addLayout(right);
-//    frameLayout->addStretch();
-
-    QGridLayout * frameLayout = new QGridLayout(frame);
-    frameLayout->addLayout(topLeft, 0, 0);
-    frameLayout->addLayout(left, 1, 0);
-    frameLayout->addLayout(zoom_layout, 0, 1);
-    frameLayout->addWidget(my_view, 1, 1);
-    frameLayout->addWidget(row_nb, 2, 0);
+    QVBoxLayout * frameLayout = new QVBoxLayout(frame);
+    frameLayout->addLayout(top);
+    frameLayout->addLayout(stackedLayout);
+    frameLayout->addWidget(row_nb);
 
     setCentralWidget(frame);
 
     setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
-    setWindowTitle(tr("My Models"));
+    setWindowTitle(tr("Scanner"));
 }
 
 MainWindow::~MainWindow()
 {
     end();
+}
+
+void MainWindow::initGridView(const QString & style_sheet)
+{
+    grid_view->hide();
+    // Display Icons
+    grid_view->setViewMode(QListView::IconMode);
+
+    // Use Grid Layout
+    // grid_view->setGridSize(QSize(160, 200));
+
+    // Items can be moved by the user only to grid positions
+    grid_view->setMovement(QListView::Snap);
+
+    grid_view->setResizeMode(QListView::Adjust);
+
+    // Set size
+    //grid_view->setMaximumWidth(1200);
+    //grid_view->setMinimumWidth(1200);
+    grid_view->setSpacing(5);
+
+    // Remove horisontal scroll
+
+    grid_view->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    // Set selection mode : QAbstractItemView::ExtendedSelection, QAbstractItemView::SingleSelection, QAbstractItemView::ContiguousSelection
+    grid_view->setSelectionMode(QAbstractItemView::ExtendedSelection);
+
+    // Enable Drag and Drop mode : QAbstractItemView::NoDragDrop, .. QAbstractItemView::DragDrop, QAbstractItemView::InternalMove
+    grid_view->setDragDropMode(QAbstractItemView::InternalMove);
+
+    // Show Drop indicator
+    grid_view->setDropIndicatorShown(true);
+
+    // Set style
+    grid_view->setStyle(new MyStyle(grid_view->style()));
+
+    grid_view->setStyleSheet(style_sheet);
+
+    // (Un)Set Focus
+
+    grid_view->setFocusPolicy(Qt::NoFocus);
+}
+
+void MainWindow::initDleleteSelectedButton()
+{
+    QPixmap pixmap(":images/bin.png");
+    delete_selected = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    connect(delete_selected, &Clickable::clicked, this, [this] {
+        QStringList files;
+        QModelIndexList indexes = selection_model->selectedIndexes();
+        foreach (QModelIndex index, indexes)
+        {
+            files << my_model->data(index, Qt::ToolTipRole).toString();
+        }
+
+        foreach (QString file, files)
+        {
+            my_model->deleteFile(file);
+        }
+
+        foreach (QModelIndex index, indexes)
+        {
+            if(index.isValid())
+            {
+                selection_model->select(index, QItemSelectionModel::Deselect);
+            }
+        }
+    });
+}
+
+void MainWindow::initViewSelector()
+{
+    view_selector = new QCheckBox();
+
+    QFile styleFile(":style/view-selector.qss");
+    QString styleSheet;
+    if (styleFile.open(QIODevice::ReadOnly))
+    {
+        styleSheet = styleFile.readAll();
+        // add log here
+    }
+
+    view_selector->setStyleSheet(styleSheet);
+    view_selector->setChecked(true);
+
+    stackedLayout = new QStackedLayout;
+    stackedLayout->addWidget(grid_view);
+    stackedLayout->addWidget(single_file_view);
+    stackedLayout->setCurrentIndex(0);
+
+    connect(view_selector, &QCheckBox::stateChanged, this, [this] {
+        if(view_selector->checkState() == Qt::Checked)
+        {
+            stackedLayout->setCurrentIndex(0);
+            grid_view->setFocus();
+        }
+        else
+        {
+            stackedLayout->setCurrentIndex(1);
+            single_file_view->setFocusOnThumbnailList();
+        }
+    });
+}
+
+void MainWindow::initSelectAll(const QString & style_sheet)
+{
+    select_all = new QCheckBox();
+    select_all->setStyleSheet(style_sheet);
+
+    connect(select_all, &QCheckBox::stateChanged, this, [this] {
+
+        QItemSelectionModel::SelectionFlag flag;
+
+        if(select_all->checkState() == Qt::Checked)
+        {
+            flag = QItemSelectionModel::Select;
+        }
+        else
+        {
+            flag = QItemSelectionModel::Deselect;
+        }
+
+        int rows = my_model->rowCount();
+
+        QModelIndex topLeft = my_model->index(0,0);
+        QModelIndex bottomRight = my_model->index(rows-1,0);
+        QItemSelection selection(topLeft, bottomRight);
+        selection_model->select(selection, flag);
+    });
+}
+
+void MainWindow::initRotateSelectedButton()
+{
+    QPixmap pixmap(":images/rotate.png");
+    rotate_selected = new Clickable(pixmap.scaled(20, 20, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+
+    connect(rotate_selected, &Clickable::clicked, this, [this] {
+        QModelIndexList indexes = selection_model->selectedIndexes();
+        foreach (QModelIndex index, indexes)
+        {
+            my_model->rotate(index);
+        }
+    });
+}
+
+void MainWindow::initZoomButtons()
+{
+    QPixmap pixmap(":images/plus.png");
+    zoom_in = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    connect(zoom_in, &Clickable::clicked, single_file_view->documentViewer(), &DocumentViewer::zoomIn);
+
+    pixmap.load(":images/minus.png");
+    zoom_out = new Clickable(pixmap.scaled(15, 15, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    connect(zoom_out, &Clickable::clicked, single_file_view->documentViewer(), &DocumentViewer::zoomOut);
 }

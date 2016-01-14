@@ -25,7 +25,8 @@ public:
     MyData(const MyData &) = default;
 
     void loadThumbnailAsync(const QFileInfo & fileInfo);
-
+    void rotate();
+    void deleteFile();
 
     QFileInfo m_fileInfo;
     QPixmap m_thumbnail;
@@ -64,25 +65,23 @@ public:
 
     void rotateLeft(const QModelIndex & index);
 
-    bool addRow(MyData * data, int position = -1);
-
-    bool removeSelected();
+    bool addRow(MyData * data, int position = -1, bool signal_new_row = true);
 
     bool setDirectory(const QString & directory_path);
 
-    bool deleteFileAndRemoveRow(int index);
+    void rotate(const QModelIndex & index);
 
+    void deleteFile(const QString & file_path);
 
+    bool deleteFile(int row);
 
     //QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const;
 	//QHash<int, QByteArray> QAbstractItemModel::roleNames() const;
 signals:
-    void rowNbChanged(int row_nb);
-
-public slots:
-    void selectAll(int state);
-    void rotateChecked();
-//    void action(ThumbnailEditor::Action action);
+    void rowAdded(int row);
+    void rowRemoved(int row);
+    void dragStarted() const;
+    void dragEnded() const;
 
 private slots:
     void UpdateThumbnail(const QFileInfo & fileInfo);

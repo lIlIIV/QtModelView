@@ -1,0 +1,17 @@
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+}
+
+QCheckBox::indicator:unchecked {
+    image: url(:/images/selection_thumbnail.png);
+}
+
+QCheckBox::indicator:checked {
+    image: url(:/images/selection_grid.png);
+}
+
+
+
+
+

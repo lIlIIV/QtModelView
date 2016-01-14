@@ -81,7 +81,8 @@ void MyView::dataChanged(const QModelIndex & topLeft, const QModelIndex & bottom
     Q_UNUSED(topLeft);
     Q_UNUSED(bottomRight);
     Q_UNUSED(roles);
-    if(roles.contains(Qt::DecorationRole))
+    if (roles.contains(Qt::DecorationRole) &&
+            (topLeft.row() <= m_displayed_index.row() && bottomRight.row() >= m_displayed_index.row()))
     {
         updateImage();
     }
@@ -97,6 +98,7 @@ void MyView::selectionChanged(const QItemSelection & selected, const QItemSelect
 void MyView::updateImage()
 {
     //QPixmap * pixmap;
+    QModelIndex index;
     QString file_name;
     switch( selectionModel()->selection().indexes().count() )
     {
@@ -106,16 +108,33 @@ void MyView::updateImage()
     case 1:
       //pixmap = new QPixmap(model()->data(currentIndex(), Qt::ToolTipRole).toString());
       //document_->setPixmap(*pixmap);
-        if(currentIndex().isValid())
+        index = selectionModel()->selection().indexes()[0];
+        //if(currentIndex().isValid())
+        if(index.isValid())
         {
-            file_name = model()->data(currentIndex(), Qt::ToolTipRole).toString();
+            file_name = model()->data(index, Qt::ToolTipRole).toString();
             m_document->loadDocument(file_name);
+            m_displayed_index = index;
         }
       break;
     default:
       // Too many items selected.
       // document_->setText( tr("<i>Too many items selected.<br> Can only show one item at a time.</i>") );
-      m_document->setText( QString(tr("<i>%1 items selected.<br> Can only show one item at a time.</i>")).arg(selectionModel()->selection().indexes().count()) );
+      // m_document->setText( QString(tr("<i>%1 items selected.<br> Can only show one item at a time.</i>")).arg(selectionModel()->selection().indexes().count()) );
+      index = selectionModel()->selection().indexes()[0];
+      if(currentIndex().isValid())
+      {
+          file_name = model()->data(currentIndex(), Qt::ToolTipRole).toString();
+          m_document->loadDocument(file_name);
+          m_displayed_index = index;
+      }
+      else if(index.isValid())
+      {
+//          file_name = model()->data(currentIndex(), Qt::ToolTipRole).toString();
+          file_name = model()->data(index, Qt::ToolTipRole).toString();
+          m_document->loadDocument(file_name);
+          m_displayed_index = index;
+      }
     break;
     }
 }

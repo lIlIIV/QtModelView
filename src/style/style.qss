@@ -19,11 +19,24 @@ QLabel {
     color: "#a0a6ac";
 }
 
+QCheckBox::indicator {
+    width: 18px;
+    height: 18px;
+}
+
+QCheckBox::indicator:unchecked {
+    image: url(:/images/unselected.png);
+}
+
+QCheckBox::indicator:checked {
+    image: url(:/images/selected.png);
+}
 
 /*QListView::indicator:unchecked
 {
         image:url(":images/unstarted.png")
 }*/
+
 
 
 

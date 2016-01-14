@@ -22,13 +22,13 @@ namespace {
 }
 
 MyData::MyData()
-    : m_thumbnail(QPixmap(default_image)), m_checkState(true)
+    : m_thumbnail(QPixmap(default_image)), m_checkState(Qt::Unchecked)
 {
     m_thumbnail = m_thumbnail.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
 
 MyData::MyData(const QFileInfo & fileInfo)
-    : m_fileInfo(fileInfo), m_thumbnail(QPixmap(default_image)), m_checkState(true)
+    : m_fileInfo(fileInfo), m_thumbnail(QPixmap(default_image)), m_checkState(Qt::Unchecked)
 {
     m_thumbnail = m_thumbnail.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 }
@@ -68,6 +68,54 @@ void MyData::loadThumbnailAsync(const QFileInfo & fileInfo)
     });
 }
 
+void MyData::rotate()
+{
+    QPointer<QObject> weak_this(this);
+
+    dispatchAsync(weak_this, [this, weak_this] {
+        QImage img;
+        QPixmap  pmap;
+        QString file_path = m_fileInfo.absoluteFilePath();
+        bool res = img.load(file_path);
+        if(res)
+        {
+            QTransform transformer;
+            img = img.transformed(transformer.rotate(90));
+            if (img.save(file_path) == true)
+            {
+                img = img.scaled(A4_W, A4_H, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+                pmap =  QPixmap::fromImage(img);
+
+                dispatchAsyncMain(weak_this, [this, res, pmap] {
+                    if (res)
+                    {
+                        m_thumbnail = pmap;
+                        thumbnailLoaded(m_fileInfo);
+                    }
+                    else
+                    {
+                        QTimer::singleShot(1000, this, [this] {
+                            rotate();
+                        });
+                    }
+                });
+            }
+        }
+    });
+}
+
+void MyData::deleteFile()
+{
+    QPointer<QObject> weak_this(this);
+
+    dispatchAsync(weak_this, [this, weak_this] {
+        QString file_path = m_fileInfo.absoluteFilePath();
+        QFile file(file_path);
+        file.remove();
+
+        //TODO check the result
+    });
+}
 
 MyModel::MyModel(QObject * parent)
     : QAbstractListModel(parent)
@@ -75,7 +123,7 @@ MyModel::MyModel(QObject * parent)
     // QString scanner("/Users/liliaivanova/.Ipso/Scanner");
     QString scanner("/Users/liliaivanova/Desktop/Numbers");
     ////QString scanner("/Users/liliaivanova/Desktop");
-    setDirectory(scanner);
+    //setDirectory(scanner);
 }
 
 MyModel::~MyModel()
@@ -109,9 +157,9 @@ QVariant MyModel::data(const QModelIndex & index, int role) const
 
     switch(role)
 	{
-    case Qt::CheckStateRole:
-        return m_files[row]->m_checkState;
-        break;
+//    case Qt::CheckStateRole:
+//        return m_files[row]->m_checkState;
+//        break;
     case Qt::DecorationRole:
         return m_files[row]->m_thumbnail;
         break;
@@ -122,7 +170,8 @@ QVariant MyModel::data(const QModelIndex & index, int role) const
         return m_files[row]->m_fileInfo.absoluteFilePath();
 		break;
     case Qt::SizeHintRole:
-        return QSize(A4_W, A4_H);
+        //return QSize( m_files[row]->m_thumbnail.width() + 40, m_files[row]->m_thumbnail.height() + 11);
+        return QSize( m_files[row]->m_thumbnail.width() + 11, m_files[row]->m_thumbnail.height() + 11);
     break;
     default:
         return QVariant();
@@ -152,9 +201,9 @@ bool MyModel::setData(const QModelIndex & index, const QVariant & value, int rol
             m_files[row]->m_thumbnail = value.value<QPixmap>();
             emit dataChanged(index, index, {Qt::DecorationRole});
         break;
-        case Qt::CheckStateRole:
-            m_files[row]->m_checkState = value.toInt();
-            emit dataChanged(index, index, {Qt::CheckStateRole});
+//        case Qt::CheckStateRole:
+//            m_files[row]->m_checkState = value.toInt();
+//            emit dataChanged(index, index, {Qt::CheckStateRole});
         break;
     	default:
     	break;
@@ -168,7 +217,7 @@ Qt::ItemFlags MyModel::flags(const QModelIndex & index) const
 
     if(index.isValid())
     {
-        return defaultFlags | Qt::ItemIsUserCheckable | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable;
+        return defaultFlags /*| Qt::ItemIsUserCheckable*/ | Qt::ItemIsDragEnabled | Qt::ItemIsDropEnabled | Qt::ItemIsEditable;
     }
     else
     {
@@ -206,11 +255,13 @@ QMimeData * MyModel::mimeData(const QModelIndexList & indexes) const
     }
 
     mimeData->setData("image/my-type", encodedData);
+    emit dragStarted();
     return mimeData;
 }
 
 bool MyModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int row, int column, const QModelIndex & parent)
 {
+    emit dragEnded();
     if (action == Qt::IgnoreAction)
     {
         return true;
@@ -249,14 +300,15 @@ bool MyModel::dropMimeData(const QMimeData * data, Qt::DropAction action, int ro
 
         MyData * new_row = new MyData(tool_tip, pixmap, check_state);
 
-        addRow(new_row, endRow);
+        addRow(new_row, endRow, false);
 
         ++endRow;
     }
+
     return true;
 }
 
-bool MyModel::addRow(MyData * data, int position)
+bool MyModel::addRow(MyData * data, int position, bool signal_new_row)
 {
     if (data == nullptr)
     {
@@ -269,6 +321,13 @@ bool MyModel::addRow(MyData * data, int position)
     beginInsertRows(QModelIndex(), position, position);
     m_files.insert(position, data);
     endInsertRows();
+
+    // when a new row is added it shall be selected
+    // ! we dont want to signal new row if it has been draged
+    if(signal_new_row)
+    {
+        emit rowAdded(position);
+    }
     return true;
 }
 
@@ -308,6 +367,7 @@ bool MyModel::addRow(MyData * data, int position)
     {
         return false;
     }
+
     return QAbstractItemModel::canDropMimeData(data, action, row, column, parent);
  }
 
@@ -362,71 +422,30 @@ bool MyModel::addRow(MyData * data, int position)
     msgBox.exec();
  }
 
- void MyModel::selectAll(int state)
- {
-    for(int i = 0; i < rowCount(); i++)
-    {
-        setData(index(i, 0), state, Qt::CheckStateRole);
-    }
- }
 
- void MyModel::rotateChecked()
- {
-     for(int i = 0; i < rowCount(); i++)
-     {
-         if(m_files[i]->m_checkState == Qt::Checked)
-         {
-             rotateLeft(index(i, 0));
-         }
-     }
- }
-
-bool MyModel::deleteFileAndRemoveRow(int index)
+void MyModel::rotate(const QModelIndex & index)
 {
-    int out = true;
-    QFile file(m_files[index]->m_fileInfo.absoluteFilePath());
-    if(file.remove())
+    if(index.isValid())
     {
-        if(!removeRow(index))
-        {
-            out = false;
-        }
-        else
-        {
-            emit rowNbChanged(rowCount());
-        }
+        m_files[index.row()]->rotate();
     }
-    else
-    {
-        // log error here
-        // error message here
-        out = false;
-    }
-
-    return out;
 }
 
- bool MyModel::removeSelected()
- {
-
-    int rows = rowCount();
-
-    for(int i = 0; i < rows; i++)
+bool MyModel::deleteFile(int row)
+{
+    if(row < 0 || row < rowCount())
     {
-        if(m_files[i]->m_checkState == Qt::Checked)
-        {
-            if(!deleteFileAndRemoveRow(i))
-            {
-                return false;
-            }
-            rows--;
-            i--;
-        }
+        return false;
     }
 
+    QFile file(m_files[row]->m_fileInfo.absoluteFilePath());
+    if(!file.remove())
+    {
+        return false;
+    }
 
     return true;
- }
+}
 
  void MyModel::retrieveFiles()
  {
@@ -442,7 +461,7 @@ bool MyModel::deleteFileAndRemoveRow(int index)
 
      QList<QString> files;
 
-     int rows_nb_before = rowCount();
+     //int rows_nb_before = rowCount();
 
      for(int i = 0; i < fileList.count(); i ++)
      {
@@ -478,12 +497,6 @@ bool MyModel::deleteFileAndRemoveRow(int index)
             i--;
          }
      }
-
-    // display current row number
-    if(rows_nb_before != rowCount())
-    {
-        emit rowNbChanged(rowCount());
-    }
 }
 
 void MyModel::UpdateThumbnail(const QFileInfo & fileInfo)
@@ -521,6 +534,18 @@ bool MyModel::setDirectory(const QString & directory_path)
         return false;
     }
 
-    connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, &MyModel::retrieveFiles);
+    connect(&m_watcher, &QFileSystemWatcher::directoryChanged, this, [this] {
+        retrieveFiles();
+    });
     return true;
+}
+
+
+void MyModel::deleteFile(const QString & file_path)
+{
+    QModelIndex index =  findByFilePath(file_path);
+    if(index.isValid())
+    {
+        m_files[index.row()]->deleteFile();
+    }
 }

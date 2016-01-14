@@ -41,12 +41,12 @@ void MyDelegate::paint(QPainter * painter, const QStyleOptionViewItem & option, 
     painter->drawText(text_rect , Qt::AlignCenter, display_index);
 }
 
-QSize MyDelegate::sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
-{
-    Q_UNUSED(option);
-    QSize icon = index.data(Qt::SizeHintRole).toSize();
-    return QSize( icon.width() + 40, icon.height() + 11);
-}
+//QSize MyDelegate::sizeHint(const QStyleOptionViewItem & option, const QModelIndex & index) const
+//{
+//    Q_UNUSED(option);
+//    QSize icon = index.data(Qt::SizeHintRole).toSize();
+//    return QSize( icon.width() + 40, icon.height() + 11);
+//}
 
 QWidget * MyDelegate::createEditor(QWidget * parent, const QStyleOptionViewItem & option, const QModelIndex & index) const
 {
@@ -84,7 +84,7 @@ void MyDelegate::setModelData(QWidget * editor, QAbstractItemModel * model, cons
 
     if(th_editor->deleteThumbnail())
     {
-        m->deleteFileAndRemoveRow(index.row());
+        m->deleteFile(index.row());
         th_editor->done();
     }
 }

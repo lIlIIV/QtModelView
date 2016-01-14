@@ -8,5 +8,10 @@
         <file>images/plus.png</file>
         <file>images/rotate.png</file>
         <file>images/bin.png</file>
+        <file>images/selected.png</file>
+        <file>images/unselected.png</file>
+        <file>images/selection_grid.png</file>
+        <file>images/selection_thumbnail.png</file>
+        <file>style/view-selector.qss</file>
     </qresource>
 </RCC>

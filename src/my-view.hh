@@ -34,6 +34,7 @@ protected slots:
 private:
   void updateImage();
   DocumentViewer * m_document;
+  QModelIndex m_displayed_index;
 
 };
 
